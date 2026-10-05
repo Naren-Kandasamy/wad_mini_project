@@ -1,0 +1,8 @@
+server:
+  port: 8082
+spring:
+  application:
+    name: product-service
+  data:
+    mongodb:
+      uri: mongodb://mongodb:27017/product_db
