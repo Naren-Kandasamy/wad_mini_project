@@ -34,12 +34,20 @@ const addToCart = async (product) => {
     quantity: 1,
     price: product.price
   }
-  await fetch(`/api/cart/${user.value.email}/add`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(item)
-  })
-  alert('Added to cart')
+  try {
+    const res = await fetch('/api/cart/me/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(item)
+    })
+    if (res.ok) {
+      alert('Added to cart')
+    } else {
+      alert('Failed to add to cart')
+    }
+  } catch (err) {
+    console.error('Failed to add to cart', err)
+  }
 }
 
 onMounted(() => {

@@ -19,7 +19,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeExchange(exchanges -> exchanges
                 // Public endpoints
-                .pathMatchers("/api/products/**").permitAll()
+                .pathMatchers("/api/me", "/api/products/**").permitAll()
                 // Any other endpoint requires authentication
                 .anyExchange().authenticated()
             )

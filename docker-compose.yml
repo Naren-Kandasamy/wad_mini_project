@@ -1,10 +1,9 @@
-version: '3.8'
 services:
   mongodb:
     image: mongo:latest
     container_name: mongodb
     ports:
-      - "27017:27017"
+      - "27019:27017"
     volumes:
       - mongo-data:/data/db
 
@@ -27,6 +26,9 @@ services:
     container_name: product-service
     ports:
       - "8082:8082"
+    environment:
+      - SPRING_MONGODB_URI=mongodb://mongodb:27017/product_db
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/product_db
     depends_on:
       - mongodb
 
@@ -35,6 +37,9 @@ services:
     container_name: user-service
     ports:
       - "8081:8081"
+    environment:
+      - SPRING_MONGODB_URI=mongodb://mongodb:27017/user_db
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/user_db
     depends_on:
       - mongodb
 
@@ -43,6 +48,9 @@ services:
     container_name: cart-service
     ports:
       - "8083:8083"
+    environment:
+      - SPRING_MONGODB_URI=mongodb://mongodb:27017/cart_db
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/cart_db
     depends_on:
       - mongodb
 
@@ -51,6 +59,9 @@ services:
     container_name: order-service
     ports:
       - "8084:8084"
+    environment:
+      - SPRING_MONGODB_URI=mongodb://mongodb:27017/order_db
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/order_db
     depends_on:
       - mongodb
 

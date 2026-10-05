@@ -13,11 +13,11 @@ public class AuthController {
         if (principal == null) {
             return Map.of("authenticated", false);
         }
-        return Map.of(
-            "authenticated", true,
-            "name", principal.getAttribute("name"),
-            "email", principal.getAttribute("email"),
-            "picture", principal.getAttribute("picture")
-        );
+        java.util.Map<String, Object> details = new java.util.HashMap<>();
+        details.put("authenticated", true);
+        details.put("name", principal.getAttribute("name") != null ? principal.getAttribute("name") : "");
+        details.put("email", principal.getAttribute("email") != null ? principal.getAttribute("email") : "");
+        details.put("picture", principal.getAttribute("picture") != null ? principal.getAttribute("picture") : "");
+        return details;
     }
 }

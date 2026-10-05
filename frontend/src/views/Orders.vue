@@ -26,9 +26,13 @@ const user = inject('user')
 
 const loadOrders = async () => {
   if (!user.value) return
-  const res = await fetch(`/api/orders/${user.value.email}`)
-  if (res.ok) {
-    orders.value = await res.json()
+  try {
+    const res = await fetch('/api/orders/me')
+    if (res.ok) {
+      orders.value = await res.json()
+    }
+  } catch (err) {
+    console.error('Failed to load orders', err)
   }
 }
 

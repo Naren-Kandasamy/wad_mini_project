@@ -5,4 +5,4 @@ spring:
     name: product-service
   data:
     mongodb:
-      uri: mongodb://mongodb:27017/product_db
+      uri: ${SPRING_DATA_MONGODB_URI:mongodb://localhost:27017/product_db}

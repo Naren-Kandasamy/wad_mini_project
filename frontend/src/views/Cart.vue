@@ -29,32 +29,46 @@ const cartTotal = computed(() => {
 
 const loadCart = async () => {
   if (!user.value) return
-  const res = await fetch(`/api/cart/${user.value.email}`)
-  if (res.ok) {
-    const data = await res.json()
-    cartItems.value = data.items || []
+  try {
+    const res = await fetch('/api/cart/me')
+    if (res.ok) {
+      const data = await res.json()
+      cartItems.value = data.items || []
+    }
+  } catch (err) {
+    console.error('Failed to load cart', err)
   }
 }
 
 const removeFromCart = async (productId) => {
-  await fetch(`/api/cart/${user.value.email}/remove/${productId}`, { method: 'DELETE' })
-  await loadCart()
+  try {
+    await fetch(`/api/cart/me/items/${productId}`, { method: 'DELETE' })
+    await loadCart()
+  } catch (err) {
+    console.error('Failed to remove item', err)
+  }
 }
 
 const placeOrder = async () => {
   const order = {
-    userEmail: user.value.email,
-    items: cartItems.value,
-    totalAmount: cartTotal.value
+    items: cartItems.value
   }
-  await fetch('/api/orders', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(order)
-  })
-  await fetch(`/api/cart/${user.value.email}/clear`, { method: 'DELETE' })
-  alert('Order placed successfully!')
-  loadCart()
+  try {
+    const res = await fetch('/api/orders/checkout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(order)
+    })
+    if (res.ok) {
+      await fetch('/api/cart/me', { method: 'DELETE' })
+      alert('Order placed successfully!')
+      await loadCart()
+    } else {
+      alert('Failed to place order.')
+    }
+  } catch (err) {
+    console.error('Failed to place order', err)
+  }
 }
 
 onMounted(() => {
