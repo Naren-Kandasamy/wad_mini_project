@@ -89,10 +89,21 @@ public class UnifiedRunner {
         System.out.println("🌟 Unified Microservices Launcher (Single JVM Architecture)      ");
         System.out.println("==================================================================");
 
-        String userUri = getEnv(null, "SPRING_DATA_MONGODB_URI_USER", "MONGODB_URI_USER", "SPRING_DATA_MONGODB_URI", "MONGODB_URI");
-        String productUri = getEnv(null, "SPRING_DATA_MONGODB_URI_PRODUCT", "MONGODB_URI_PRODUCT", "SPRING_DATA_MONGODB_URI", "MONGODB_URI");
-        String cartUri = getEnv(null, "SPRING_DATA_MONGODB_URI_CART", "MONGODB_URI_CART", "SPRING_DATA_MONGODB_URI", "MONGODB_URI");
-        String orderUri = getEnv(null, "SPRING_DATA_MONGODB_URI_ORDER", "MONGODB_URI_ORDER", "SPRING_DATA_MONGODB_URI", "MONGODB_URI");
+        String userUri = getEnv(null,
+            "SPRING_DATA_MONGODB_URI_USER", "SPRING_MONGODB_URI_USER", "MONGODB_URI_USER", "USER_MONGODB_URI", "USER_MONGO_URI",
+            "SPRING_DATA_MONGODB_URI", "SPRING_MONGODB_URI", "MONGODB_URI", "MONGO_URI");
+
+        String productUri = getEnv(null,
+            "SPRING_DATA_MONGODB_URI_PRODUCT", "SPRING_MONGODB_URI_PRODUCT", "MONGODB_URI_PRODUCT", "PRODUCT_MONGODB_URI", "PRODUCT_MONGO_URI",
+            "SPRING_DATA_MONGODB_URI", "SPRING_MONGODB_URI", "MONGODB_URI", "MONGO_URI");
+
+        String cartUri = getEnv(null,
+            "SPRING_DATA_MONGODB_URI_CART", "SPRING_MONGODB_URI_CART", "MONGODB_URI_CART", "CART_MONGODB_URI", "CART_MONGO_URI",
+            "SPRING_DATA_MONGODB_URI", "SPRING_MONGODB_URI", "MONGODB_URI", "MONGO_URI");
+
+        String orderUri = getEnv(null,
+            "SPRING_DATA_MONGODB_URI_ORDER", "SPRING_MONGODB_URI_ORDER", "MONGODB_URI_ORDER", "ORDER_MONGODB_URI", "ORDER_MONGO_URI",
+            "SPRING_DATA_MONGODB_URI", "SPRING_MONGODB_URI", "MONGODB_URI", "MONGO_URI");
 
         String basePath = args.length > 0 ? args[0] : "/app";
         String gatewayPort = getEnv("8080", "PORT", "SERVER_PORT");
@@ -116,28 +127,40 @@ public class UnifiedRunner {
         // 1. User Service (Internal Port 8081)
         List<String> userArgs = new ArrayList<>();
         userArgs.add("--server.port=" + userPort);
-        if (userUri != null && !userUri.isBlank()) userArgs.add("--spring.data.mongodb.uri=" + userUri);
+        if (userUri != null && !userUri.isBlank()) {
+            userArgs.add("--spring.mongodb.uri=" + userUri);
+            userArgs.add("--spring.data.mongodb.uri=" + userUri);
+        }
         startApp("user-service", basePath + "/user", "com.example.user_service.UserServiceApplication", userArgs);
         Thread.sleep(3000);
 
         // 2. Product Service (Internal Port 8082)
         List<String> productArgs = new ArrayList<>();
         productArgs.add("--server.port=" + productPort);
-        if (productUri != null && !productUri.isBlank()) productArgs.add("--spring.data.mongodb.uri=" + productUri);
+        if (productUri != null && !productUri.isBlank()) {
+            productArgs.add("--spring.mongodb.uri=" + productUri);
+            productArgs.add("--spring.data.mongodb.uri=" + productUri);
+        }
         startApp("product-service", basePath + "/product", "com.example.product_service.ProductServiceApplication", productArgs);
         Thread.sleep(3000);
 
         // 3. Cart Service (Internal Port 8083)
         List<String> cartArgs = new ArrayList<>();
         cartArgs.add("--server.port=" + cartPort);
-        if (cartUri != null && !cartUri.isBlank()) cartArgs.add("--spring.data.mongodb.uri=" + cartUri);
+        if (cartUri != null && !cartUri.isBlank()) {
+            cartArgs.add("--spring.mongodb.uri=" + cartUri);
+            cartArgs.add("--spring.data.mongodb.uri=" + cartUri);
+        }
         startApp("cart-service", basePath + "/cart", "com.example.cart_service.CartServiceApplication", cartArgs);
         Thread.sleep(3000);
 
         // 4. Order Service (Internal Port 8084)
         List<String> orderArgs = new ArrayList<>();
         orderArgs.add("--server.port=" + orderPort);
-        if (orderUri != null && !orderUri.isBlank()) orderArgs.add("--spring.data.mongodb.uri=" + orderUri);
+        if (orderUri != null && !orderUri.isBlank()) {
+            orderArgs.add("--spring.mongodb.uri=" + orderUri);
+            orderArgs.add("--spring.data.mongodb.uri=" + orderUri);
+        }
         startApp("order-service", basePath + "/order", "com.example.order_service.OrderServiceApplication", orderArgs);
         Thread.sleep(3000);
 
