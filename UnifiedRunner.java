@@ -105,6 +105,9 @@ public class UnifiedRunner {
             "SPRING_DATA_MONGODB_URI_ORDER", "SPRING_MONGODB_URI_ORDER", "MONGODB_URI_ORDER", "ORDER_MONGODB_URI", "ORDER_MONGO_URI",
             "SPRING_DATA_MONGODB_URI", "SPRING_MONGODB_URI", "MONGODB_URI", "MONGO_URI");
 
+        String clientId = getEnv(null, "GOOGLE_CLIENT_ID");
+        String clientSecret = getEnv(null, "GOOGLE_CLIENT_SECRET");
+
         String basePath = args.length > 0 ? args[0] : "/app";
         String gatewayPort = getEnv("8080", "PORT", "SERVER_PORT");
         String userPort = getEnv("8081", "USER_SERVICE_PORT");
@@ -118,6 +121,8 @@ public class UnifiedRunner {
         System.out.println("Product DB URI: " + (productUri != null ? "CONFIGURED (" + productUri.substring(0, Math.min(25, productUri.length())) + "...)" : "DEFAULT (localhost)"));
         System.out.println("Cart DB URI: " + (cartUri != null ? "CONFIGURED (" + cartUri.substring(0, Math.min(25, cartUri.length())) + "...)" : "DEFAULT (localhost)"));
         System.out.println("Order DB URI: " + (orderUri != null ? "CONFIGURED (" + orderUri.substring(0, Math.min(25, orderUri.length())) + "...)" : "DEFAULT (localhost)"));
+        System.out.println("Google Client ID: " + (clientId != null ? clientId.substring(0, Math.min(18, clientId.length())) + "..." : "MISSING"));
+        System.out.println("Google Client Secret: " + (clientSecret != null ? "CONFIGURED (length " + clientSecret.length() + ")" : "MISSING"));
 
         // Register clean shutdown hook
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
@@ -171,6 +176,12 @@ public class UnifiedRunner {
         gatewayArgs.add("--USER_SERVICE_URL=http://localhost:" + userPort);
         gatewayArgs.add("--CART_SERVICE_URL=http://localhost:" + cartPort);
         gatewayArgs.add("--ORDER_SERVICE_URL=http://localhost:" + orderPort);
+        if (clientId != null && !clientId.isBlank()) {
+            gatewayArgs.add("--spring.security.oauth2.client.registration.google.client-id=" + clientId.trim());
+        }
+        if (clientSecret != null && !clientSecret.isBlank()) {
+            gatewayArgs.add("--spring.security.oauth2.client.registration.google.client-secret=" + clientSecret.trim());
+        }
         startApp("api-gateway", basePath + "/gateway", "com.example.api_gateway.ApiGatewayApplication", gatewayArgs);
 
         // Wait for gateway startup and print final memory status
