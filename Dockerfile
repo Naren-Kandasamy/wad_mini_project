@@ -27,11 +27,9 @@ COPY api-gateway/pom.xml api-gateway/
 COPY api-gateway/src api-gateway/src/
 RUN cd api-gateway && mvn clean package -DskipTests
 
-# Runtime stage: minimal Alpine JRE
-FROM eclipse-temurin:21-jre-alpine
+# Runtime stage: Standard Debian-based Temurin JRE (glibc with reliable DNS SRV resolution)
+FROM eclipse-temurin:21-jre
 WORKDIR /app
-
-RUN apk add --no-cache bash curl
 
 # Copy compiled JARs
 COPY --from=build /build/user-service/target/*.jar user-service.jar
