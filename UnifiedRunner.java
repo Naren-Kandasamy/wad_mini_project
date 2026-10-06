@@ -36,7 +36,7 @@ public class UnifiedRunner {
         } catch (Throwable ignored) {}
     }
 
-    public static void startApp(String name, String dirPath, String mainClassName, String port, String mongoUri) {
+    public static void startApp(String name, String dirPath, String mainClassName, List<String> argsList) {
         new Thread(() -> {
             try {
                 File dir = new File(dirPath);
@@ -73,13 +73,7 @@ public class UnifiedRunner {
                 } catch (Throwable ignored) {}
 
                 Class<?> appClass = loader.loadClass(mainClassName);
-                System.out.println("🚀 Starting " + name + " (" + mainClassName + ") on port " + port + "...");
-
-                List<String> argsList = new ArrayList<>();
-                argsList.add("--server.port=" + port);
-                if (mongoUri != null && !mongoUri.isBlank()) {
-                    argsList.add("--spring.data.mongodb.uri=" + mongoUri);
-                }
+                System.out.println("🚀 Starting " + name + " (" + mainClassName + ") with args " + argsList + "...");
 
                 Method main = appClass.getMethod("main", String[].class);
                 main.invoke(null, (Object) argsList.toArray(new String[0]));
@@ -120,23 +114,41 @@ public class UnifiedRunner {
         }));
 
         // 1. User Service (Internal Port 8081)
-        startApp("user-service", basePath + "/user", "com.example.user_service.UserServiceApplication", userPort, userUri);
+        List<String> userArgs = new ArrayList<>();
+        userArgs.add("--server.port=" + userPort);
+        if (userUri != null && !userUri.isBlank()) userArgs.add("--spring.data.mongodb.uri=" + userUri);
+        startApp("user-service", basePath + "/user", "com.example.user_service.UserServiceApplication", userArgs);
         Thread.sleep(3000);
 
         // 2. Product Service (Internal Port 8082)
-        startApp("product-service", basePath + "/product", "com.example.product_service.ProductServiceApplication", productPort, productUri);
+        List<String> productArgs = new ArrayList<>();
+        productArgs.add("--server.port=" + productPort);
+        if (productUri != null && !productUri.isBlank()) productArgs.add("--spring.data.mongodb.uri=" + productUri);
+        startApp("product-service", basePath + "/product", "com.example.product_service.ProductServiceApplication", productArgs);
         Thread.sleep(3000);
 
         // 3. Cart Service (Internal Port 8083)
-        startApp("cart-service", basePath + "/cart", "com.example.cart_service.CartServiceApplication", cartPort, cartUri);
+        List<String> cartArgs = new ArrayList<>();
+        cartArgs.add("--server.port=" + cartPort);
+        if (cartUri != null && !cartUri.isBlank()) cartArgs.add("--spring.data.mongodb.uri=" + cartUri);
+        startApp("cart-service", basePath + "/cart", "com.example.cart_service.CartServiceApplication", cartArgs);
         Thread.sleep(3000);
 
         // 4. Order Service (Internal Port 8084)
-        startApp("order-service", basePath + "/order", "com.example.order_service.OrderServiceApplication", orderPort, orderUri);
+        List<String> orderArgs = new ArrayList<>();
+        orderArgs.add("--server.port=" + orderPort);
+        if (orderUri != null && !orderUri.isBlank()) orderArgs.add("--spring.data.mongodb.uri=" + orderUri);
+        startApp("order-service", basePath + "/order", "com.example.order_service.OrderServiceApplication", orderArgs);
         Thread.sleep(3000);
 
         // 5. API Gateway (External Port - Render $PORT or 8080)
-        startApp("api-gateway", basePath + "/gateway", "com.example.api_gateway.ApiGatewayApplication", gatewayPort, null);
+        List<String> gatewayArgs = new ArrayList<>();
+        gatewayArgs.add("--server.port=" + gatewayPort);
+        gatewayArgs.add("--PRODUCT_SERVICE_URL=http://localhost:" + productPort);
+        gatewayArgs.add("--USER_SERVICE_URL=http://localhost:" + userPort);
+        gatewayArgs.add("--CART_SERVICE_URL=http://localhost:" + cartPort);
+        gatewayArgs.add("--ORDER_SERVICE_URL=http://localhost:" + orderPort);
+        startApp("api-gateway", basePath + "/gateway", "com.example.api_gateway.ApiGatewayApplication", gatewayArgs);
 
         // Wait for gateway startup and print final memory status
         Thread.sleep(8000);

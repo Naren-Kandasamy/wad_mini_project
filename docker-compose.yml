@@ -15,6 +15,10 @@ services:
     environment:
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - PRODUCT_SERVICE_URL=http://product-service:8082
+      - USER_SERVICE_URL=http://user-service:8081
+      - CART_SERVICE_URL=http://cart-service:8083
+      - ORDER_SERVICE_URL=http://order-service:8084
     depends_on:
       - product-service
       - user-service
