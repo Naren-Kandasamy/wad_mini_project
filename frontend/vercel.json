@@ -9,6 +9,10 @@
       "destination": "https://nnk-backend.onrender.com/oauth2/$1"
     },
     {
+      "source": "/login/oauth2/code/(.*)",
+      "destination": "https://nnk-backend.onrender.com/login/oauth2/code/$1"
+    },
+    {
       "source": "/login/(.*)",
       "destination": "https://nnk-backend.onrender.com/login/$1"
     },

@@ -182,6 +182,16 @@ public class UnifiedRunner {
         if (clientSecret != null && !clientSecret.isBlank()) {
             gatewayArgs.add("--spring.security.oauth2.client.registration.google.client-secret=" + clientSecret.trim());
         }
+        String frontendUrl = getEnv("http://localhost:5173", "FRONTEND_URL");
+        String redirectUri = getEnv(null, "OAUTH2_REDIRECT_URI", "GOOGLE_REDIRECT_URI");
+        if (redirectUri == null && frontendUrl != null && !frontendUrl.contains("localhost")) {
+            String cleanFrontend = frontendUrl.endsWith("/") ? frontendUrl.substring(0, frontendUrl.length() - 1) : frontendUrl;
+            redirectUri = cleanFrontend + "/login/oauth2/code/google";
+        }
+        if (redirectUri != null && !redirectUri.isBlank()) {
+            System.out.println("🔗 Setting OAuth2 redirect-uri: " + redirectUri.trim());
+            gatewayArgs.add("--spring.security.oauth2.client.registration.google.redirect-uri=" + redirectUri.trim());
+        }
         startApp("api-gateway", basePath + "/gateway", "com.example.api_gateway.ApiGatewayApplication", gatewayArgs);
 
         // Wait for gateway startup and print final memory status
