@@ -1,47 +1,394 @@
-body {
-  font-family: Arial, sans-serif;
+:root {
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Organic Harmonious Palette (60-30-10 Rule) */
+  --canvas-bg: #F9F6F0;           /* 60% Warm organic oatmeal / linen canvas */
+  --canvas-alt: #F1ECE2;          /* Subtle contrast canvas for sections */
+  --surface-card: #FFFFFF;        /* Crisp card surface */
+  --surface-dark: #193126;        /* 30% Deep botanical forest green */
+  --surface-dark-subtle: #223D31; /* Elevated forest surface */
+  --surface-dark-card: #152920;   /* Deep sunken container */
+
+  /* Text & Contrast */
+  --text-primary: #17231D;        /* Soft botanical charcoal */
+  --text-secondary: #48574F;      /* Muted earth green */
+  --text-muted: #7E8C84;          /* Subtle caption grey-green */
+  --text-inverse: #F9F6F0;        /* Light canvas text for dark containers */
+  --text-inverse-muted: #A3B5AA;
+
+  /* Accents (10% High Conversion) */
+  --accent-terracotta: #C86D51;   /* Warm baked terracotta for primary CTAs */
+  --accent-terracotta-hover: #B45E43;
+  --accent-amber: #E5A83B;        /* Radiant honey amber for badges & ratings */
+  --accent-sage: #8EA593;         /* Calming botanical sage */
+  --accent-clay: #9D644F;
+  --accent-success: #2E7D52;
+  --accent-danger: #C0392B;
+
+  /* Tactile Borders & Depth */
+  --border-subtle: rgba(25, 49, 38, 0.08);
+  --border-medium: rgba(25, 49, 38, 0.14);
+  --border-dark-subtle: rgba(249, 246, 240, 0.12);
+
+  /* Tactile Multi-layer Shadows (Organic Elevation) */
+  --shadow-sm: 0 2px 4px rgba(23, 35, 29, 0.04), 0 1px 2px rgba(23, 35, 29, 0.06);
+  --shadow-card: 0 10px 30px -5px rgba(25, 49, 38, 0.05), 0 4px 12px -2px rgba(25, 49, 38, 0.03), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-card-hover: 0 16px 36px -4px rgba(25, 49, 38, 0.09), 0 6px 16px -2px rgba(25, 49, 38, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  --shadow-embossed: inset 0 2px 4px rgba(23, 35, 29, 0.08), 0 1px 1px rgba(255, 255, 255, 0.7);
+  --shadow-drawer: -12px 0 40px rgba(23, 35, 29, 0.15);
+}
+
+* {
+  box-sizing: border-box;
   margin: 0;
   padding: 0;
-  background-color: #f4f4f4;
 }
-.container {
-  max-width: 1200px;
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--canvas-bg);
+  color: var(--text-primary);
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* Typography Utility */
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-sans {
+  font-family: var(--font-sans);
+}
+
+/* Layout Containers */
+.container-wide {
+  max-width: 1280px;
   margin: 0 auto;
-  padding: 20px;
+  padding: 0 1.5rem;
 }
-nav {
-  background: #333;
-  color: white;
-  padding: 1rem;
-  display: flex;
-  justify-content: space-between;
+
+@media (max-width: 640px) {
+  .container-wide {
+    padding: 0 1rem;
+  }
+}
+
+/* Ambient Procedural Paper Grain Overlay */
+.paper-grain {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9998;
+  opacity: 0.042;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+}
+
+/* Tactile Card Components (Inspired by Ref 10) */
+.tactile-card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 1.25rem;
+  box-shadow: var(--shadow-card);
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.25s ease;
+  overflow: hidden;
+}
+
+.tactile-card:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+/* Ceramic Tile Material System (Ref 10 Aesthetic) */
+.ceramic-card {
+  position: relative;
+  background: linear-gradient(155deg, #FFFFFF 0%, #FAF6EE 100%);
+  border-radius: 1.5rem;
+  border: 1px solid rgba(25, 49, 38, 0.08);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 2px rgba(60, 40, 25, 0.05),
+    0 12px 30px -6px rgba(25, 49, 38, 0.08),
+    0 3px 8px -2px rgba(200, 109, 81, 0.04);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.ceramic-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    inset 0 1.5px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -1.5px 2px rgba(60, 40, 25, 0.05),
+    0 22px 42px -8px rgba(25, 49, 38, 0.13),
+    0 6px 14px -3px rgba(200, 109, 81, 0.08);
+}
+
+.ceramic-dish {
+  background: linear-gradient(180deg, #F5EFE4 0%, #ECE3D2 100%);
+  box-shadow:
+    inset 0 2.5px 6px rgba(25, 49, 38, 0.09),
+    inset 0 1px 2px rgba(25, 49, 38, 0.06),
+    0 1px 1px rgba(255, 255, 255, 0.9);
+  border-radius: 1.15rem;
+  border: 1px solid rgba(25, 49, 38, 0.05);
+}
+
+/* Themed Ceramic Color Glazes */
+.tile-sage {
+  background: linear-gradient(150deg, #9FB3A4 0%, #7D9484 100%);
+  color: #FFFFFF;
+}
+
+.tile-clay {
+  background: linear-gradient(150deg, #6B4237 0%, #4D2D24 100%);
+  color: #FFFFFF;
+}
+
+.tile-sand {
+  background: linear-gradient(150deg, #E6D8C5 0%, #D8C7B0 100%);
+  color: var(--text-primary);
+}
+
+.tile-moss {
+  background: linear-gradient(150deg, #1C382C 0%, #12241C 100%);
+  color: #FFFFFF;
+}
+
+.tactile-card-dark {
+  background: var(--surface-dark);
+  color: var(--text-inverse);
+  border: 1px solid var(--border-dark-subtle);
+  border-radius: 1.5rem;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.15);
+}
+
+/* Stamped Medallions & Wax Seals (Ref 10 Stamped Wax Aesthetic) */
+.embossed-badge {
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+  box-shadow: var(--shadow-embossed);
+  border: 1px solid rgba(25, 49, 38, 0.06);
+  font-weight: 600;
+  font-size: 0.75rem;
+  letter-spacing: 0.02em;
 }
-nav a {
-  color: white;
-  text-decoration: none;
-  margin-right: 15px;
+
+.embossed-seal,
+.wax-seal {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #F3ECE0 0%, #E2D7C5 100%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow:
+    inset 1px 1px 2px rgba(255, 255, 255, 0.85),
+    inset -1.5px -1.5px 3px rgba(25, 49, 38, 0.12),
+    2px 5px 12px rgba(25, 49, 38, 0.14);
 }
-.btn {
-  background: #007bff;
-  color: white;
-  border: none;
-  padding: 10px 15px;
+
+.wax-seal-dark {
+  background: linear-gradient(145deg, #2D4C3C 0%, #16281F 100%);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    inset 1px 1.5px 2px rgba(255, 255, 255, 0.28),
+    inset -1px -1.5px 3px rgba(0, 0, 0, 0.45),
+    2px 5px 14px rgba(0, 0, 0, 0.28);
+}
+
+.wax-seal-clay {
+  background: linear-gradient(145deg, #D97E63 0%, #B85F45 100%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow:
+    inset 1px 1.5px 2px rgba(255, 255, 255, 0.45),
+    inset -1px -1.5px 3px rgba(60, 20, 10, 0.4),
+    2px 6px 14px rgba(184, 95, 69, 0.35);
+}
+
+/* Debossed Inset Wells for Controls & Inputs */
+.debossed-well {
+  background: linear-gradient(180deg, #EFE9DE 0%, #F5F0E6 100%);
+  border: 1px solid rgba(25, 49, 38, 0.09);
+  border-radius: 9999px;
+  box-shadow:
+    inset 1.5px 2.5px 4px rgba(25, 49, 38, 0.1),
+    inset -1px -1px 2px rgba(255, 255, 255, 0.85),
+    0 1px 1px rgba(255, 255, 255, 0.7);
+}
+
+/* Volumetric Convex Clay Buttons (Ref 10 Pillowy Buttons) */
+.btn-clay-terracotta,
+.btn-terracotta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: linear-gradient(180deg, #D47B5E 0%, #BD6346 100%);
+  color: #FFFFFF;
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.75rem 1.35rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.25);
   cursor: pointer;
+  box-shadow:
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.5),
+    inset 0 -2px 3px rgba(80, 25, 10, 0.28),
+    0 8px 22px -3px rgba(189, 99, 70, 0.42),
+    0 2px 5px rgba(0, 0, 0, 0.08);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-clay-terracotta:hover,
+.btn-terracotta:hover {
+  background: linear-gradient(180deg, #DE8467 0%, #C76B4D 100%);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.6),
+    inset 0 -2px 3px rgba(80, 25, 10, 0.28),
+    0 12px 28px -4px rgba(189, 99, 70, 0.52),
+    0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.btn-clay-terracotta:active,
+.btn-terracotta:active {
+  transform: translateY(1.5px) scale(0.985);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.3),
+    inset 0 -1px 2px rgba(80, 25, 10, 0.35),
+    0 3px 8px rgba(189, 99, 70, 0.3);
+}
+
+.btn-clay-sand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  background: linear-gradient(180deg, #F3ECE0 0%, #E3D6C1 100%);
+  color: var(--surface-dark);
+  font-weight: 600;
+  font-size: 0.9rem;
+  padding: 0.75rem 1.35rem;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  cursor: pointer;
+  box-shadow:
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.85),
+    inset 0 -2px 3px rgba(70, 55, 40, 0.15),
+    0 6px 18px -3px rgba(40, 30, 20, 0.12),
+    0 2px 4px rgba(0, 0, 0, 0.05);
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.btn-clay-sand:hover {
+  background: linear-gradient(180deg, #FAF4EB 0%, #EADECB 100%);
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 1.5px 1.5px rgba(255, 255, 255, 0.95),
+    inset 0 -2px 3px rgba(70, 55, 40, 0.15),
+    0 10px 24px -4px rgba(40, 30, 20, 0.16);
+}
+
+.btn-clay-sand:active {
+  transform: translateY(1.5px) scale(0.985);
+  box-shadow:
+    inset 0 1px 1px rgba(255, 255, 255, 0.5),
+    0 2px 6px rgba(40, 30, 20, 0.1);
+}
+
+.btn-forest {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background-color: var(--surface-dark);
+  color: var(--text-inverse);
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--border-dark-subtle);
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(25, 49, 38, 0.2);
+  transition: all 0.2s ease;
+}
+
+.btn-forest:hover {
+  background-color: var(--surface-dark-subtle);
+  transform: translateY(-1px);
+}
+
+.btn-forest:active {
+  transform: translateY(1px);
+}
+
+.btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: var(--canvas-alt);
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 0.7rem 1.15rem;
+  border-radius: 0.875rem;
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #E8E2D7;
+  border-color: var(--border-medium);
+}
+
+/* Skeleton Shimmer Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    #ECE6DC 0%,
+    #F6F2EA 50%,
+    #ECE6DC 100%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite ease-in-out;
+  border-radius: 0.75rem;
+}
+
+/* Custom Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--canvas-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: #D3CBC0;
   border-radius: 4px;
 }
-.btn:hover {
-  background: #0056b3;
-}
-.card {
-  background: white;
-  padding: 20px;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  margin-bottom: 20px;
-}
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-  gap: 20px;
+::-webkit-scrollbar-thumb:hover {
+  background: #BDB4A8;
 }
