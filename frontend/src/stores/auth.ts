@@ -13,6 +13,7 @@ export const useAuthStore = defineStore('auth', () => {
   const accessToken = ref<string | null>(null)
   const user = ref<UserProfile | null>(null)
   const isAuthModalOpen = ref(false)
+  const authMode = ref<'keycloak' | 'local'>('local')
 
   const isAuthenticated = computed(() => !!user.value)
   const isAdmin = computed(() => user.value?.roles.includes('ADMIN') || user.value?.roles.includes('ROLE_ADMIN') || false)
@@ -103,6 +104,7 @@ export const useAuthStore = defineStore('auth', () => {
     isDeveloper,
     currentUserId,
     token,
+    authMode,
     isAuthModalOpen,
     openAuthModal,
     closeAuthModal,
