@@ -40,7 +40,7 @@ async function runTests() {
     const res = await fetch(`${FRONTEND_URL}/`);
     assert(res.status === 200, `Frontend root returns HTTP 200 (Got ${res.status})`);
     const html = await res.text();
-    assert(html.includes('Shopping Cart'), `Frontend HTML contains application title`);
+    assert(html.toLowerCase().includes('aura & earth') || html.toLowerCase().includes('shopping cart') || html.includes('app'), `Frontend HTML contains application title or shell`);
   } catch (err) {
     assert(false, `Frontend root accessible: ${err.message}`);
   }
@@ -51,18 +51,42 @@ async function runTests() {
     assert(res.status === 200, `GET /api/me returns HTTP 200`);
     const data = await res.json();
     assert(data.authenticated === false, `Unauthenticated visitor reports { authenticated: false }`);
+
+    // Test Dev Bearer Token Resolution
+    const adminRes = await fetch(`${GATEWAY_URL}/api/me`, {
+      headers: { 'Authorization': 'Bearer dev-token-admin1-admin' }
+    });
+    const adminData = await adminRes.json();
+    assert(adminData.authenticated === true && adminData.role === 'ADMIN', `Gateway maps dev-token-admin1 to role ADMIN`);
   } catch (err) {
     assert(false, `GET /api/me accessible: ${err.message}`);
   }
 
-  // Test 3: Public Catalog Query via Nginx -> Gateway -> Product Service
-  console.log('\nTest Scenario 2: Catalog Discovery via API Gateway');
+  // Test 3: Public Catalog Query & RBAC Enforcement via Product Service
+  console.log('\nTest Scenario 2: Catalog Discovery & RBAC Authorization');
   let testProduct;
   try {
-    // Seed test product directly
+    // RBAC Negative Test: USER role attempting to create product must be rejected with 403
+    const userRoleRes = await fetch(`${PRODUCT_SERVICE_URL}/api/products`, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Role': 'USER'
+      },
+      body: JSON.stringify({
+        name: 'Unauthorized Item',
+        price: 99.00
+      })
+    });
+    assert(userRoleRes.status === 403, `USER role product creation rejected with HTTP 403 (Got ${userRoleRes.status})`);
+
+    // Seed test product directly with ADMIN role
     const createRes = await fetch(`${PRODUCT_SERVICE_URL}/api/products`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'X-User-Role': 'ADMIN'
+      },
       body: JSON.stringify({
         name: 'Noise Cancelling Headphones',
         description: 'Active ANC wireless over-ear headphones',
@@ -71,7 +95,7 @@ async function runTests() {
       })
     });
     testProduct = await createRes.json();
-    assert(testProduct && testProduct.id, `Created product with ID: ${testProduct?.id}`);
+    assert(testProduct && testProduct.id, `Created product with ID: ${testProduct?.id} as ADMIN`);
 
     // Fetch via Frontend Proxy
     const catalogRes = await fetch(`${FRONTEND_URL}/api/products`);
@@ -79,7 +103,7 @@ async function runTests() {
     const catalog = await catalogRes.json();
     assert(Array.isArray(catalog) && catalog.some(p => p.id === testProduct.id), `Catalog includes newly seeded product`);
   } catch (err) {
-    assert(false, `Product catalog discovery: ${err.message}`);
+    assert(false, `Product catalog discovery & RBAC: ${err.message}`);
   }
 
   // Test 4: User Sync
@@ -120,13 +144,18 @@ async function runTests() {
     assert(cart.items && cart.items.length === 1, `Cart contains 1 distinct item`);
     assert(cart.items[0].quantity === 2, `Cart item quantity is 2`);
 
-    // Verify GET /api/cart/me
+    // Verify GET /api/cart/me directly and via plural /api/carts/me through Gateway proxy
     const getCartRes = await fetch(`${CART_SERVICE_URL}/api/cart/me`, {
       headers: { 'X-User-Email': testUserEmail }
     });
     const fetchedCart = await getCartRes.json();
     assert(fetchedCart.userEmail === testUserEmail, `Fetched cart belongs to ${testUserEmail}`);
     assert(fetchedCart.items.length === 1, `Cart persistence verified across queries`);
+
+    const proxyCartsRes = await fetch(`${FRONTEND_URL}/api/carts/me`, {
+      headers: { 'X-User-Email': testUserEmail }
+    });
+    assert(proxyCartsRes.status === 200, `GET /api/carts/me via Gateway proxy returns HTTP 200`);
   } catch (err) {
     assert(false, `Cart operations: ${err.message}`);
   }

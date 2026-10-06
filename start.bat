@@ -14,7 +14,7 @@ IF NOT EXIST ".env" (
 )
 
 echo Starting Shopping Cart microservices stack...
-docker compose up -d
+docker compose up -d --build
 
 echo.
 echo Waiting for services to initialize...

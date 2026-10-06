@@ -20,4 +20,10 @@ public class Cart {
     public void setUserEmail(String userEmail) { this.userEmail = userEmail; }
     public List<CartItem> getItems() { return items; }
     public void setItems(List<CartItem> items) { this.items = items; }
+
+    public double getSubtotal() {
+        if (items == null || items.isEmpty()) return 0.0;
+        double sum = items.stream().mapToDouble(i -> i.getPrice() * i.getQuantity()).sum();
+        return Math.round(sum * 100.0) / 100.0;
+    }
 }

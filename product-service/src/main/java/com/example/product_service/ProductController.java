@@ -19,8 +19,20 @@ public class ProductController {
         return productRepository.findAll();
     }
 
+    private void checkAdminOrDevRole(String role) {
+        if (role == null || (!role.equalsIgnoreCase("ADMIN") 
+                && !role.equalsIgnoreCase("DEVELOPER") 
+                && !role.equalsIgnoreCase("ROLE_ADMIN") 
+                && !role.equalsIgnoreCase("ROLE_DEVELOPER"))) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied: Requires ADMIN or DEVELOPER role");
+        }
+    }
+
     @PostMapping
-    public Product createProduct(@RequestBody Product product) {
+    public Product createProduct(
+            @RequestHeader(value = "X-User-Role", required = false) String role,
+            @RequestBody Product product) {
+        checkAdminOrDevRole(role);
         if (product.getName() == null || product.getName().isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Product name cannot be empty");
         }
@@ -37,7 +49,11 @@ public class ProductController {
     }
 
     @PutMapping("/{id}")
-    public Product updateProduct(@PathVariable String id, @RequestBody Product product) {
+    public Product updateProduct(
+            @PathVariable String id,
+            @RequestHeader(value = "X-User-Role", required = false) String role,
+            @RequestBody Product product) {
+        checkAdminOrDevRole(role);
         Product existing = productRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + id));
         existing.setName(product.getName());
@@ -48,7 +64,10 @@ public class ProductController {
     }
 
     @DeleteMapping("/{id}")
-    public void deleteProduct(@PathVariable String id) {
+    public void deleteProduct(
+            @PathVariable String id,
+            @RequestHeader(value = "X-User-Role", required = false) String role) {
+        checkAdminOrDevRole(role);
         if (!productRepository.existsById(id)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Product not found: " + id);
         }

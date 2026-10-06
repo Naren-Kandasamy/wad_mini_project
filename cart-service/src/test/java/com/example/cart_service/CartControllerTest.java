@@ -94,4 +94,36 @@ class CartControllerTest {
                 .header("X-User-Email", "attacker@example.com"))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    void testPluralCartsRouteAndPutQuantity() throws Exception {
+        String itemPayload = """
+            {
+                "productId": "p300",
+                "productName": "Webcam",
+                "quantity": 1,
+                "price": 45.00
+            }
+            """;
+
+        mockMvc.perform(post("/api/carts/me/items")
+                .header("X-User-Email", "dave@example.com")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(itemPayload))
+                .andExpect(status().isOk());
+
+        String updatePayload = """
+            {
+                "quantity": 5
+            }
+            """;
+
+        mockMvc.perform(put("/api/carts/me/items/p300")
+                .header("X-User-Email", "dave@example.com")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(updatePayload))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.items[0].quantity", is(5)))
+                .andExpect(jsonPath("$.subtotal", is(225.0)));
+    }
 }

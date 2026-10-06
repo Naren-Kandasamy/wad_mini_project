@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/api/cart")
+@RequestMapping({"/api/cart", "/api/carts"})
 public class CartController {
 
     @Autowired
@@ -53,6 +53,23 @@ public class CartController {
         }
         if (!found) {
             cart.getItems().add(item);
+        }
+        return cartRepository.save(cart);
+    }
+
+    @PutMapping({"/items/{productId}", "/me/items/{productId}", "/{email}/items/{productId}"})
+    public Cart updateItemQuantity(
+            @PathVariable(required = false) String email,
+            @PathVariable String productId,
+            @RequestHeader(value = "X-User-Email", required = false) String headerEmail,
+            @RequestBody CartItem item) {
+        String userEmail = resolveUserEmail(email, headerEmail);
+        Cart cart = getCart(userEmail, headerEmail);
+        for (CartItem ci : cart.getItems()) {
+            if (ci.getProductId().equals(productId)) {
+                ci.setQuantity(item.getQuantity());
+                break;
+            }
         }
         return cartRepository.save(cart);
     }

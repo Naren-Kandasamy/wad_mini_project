@@ -13,7 +13,13 @@ public class UserController {
         User existingUser = userRepository.findByEmail(user.getEmail());
         if (existingUser != null) {
             existingUser.setName(user.getName());
+            if (user.getRole() != null && !user.getRole().isBlank()) {
+                existingUser.setRole(user.getRole());
+            }
             return userRepository.save(existingUser);
+        }
+        if (user.getRole() == null || user.getRole().isBlank()) {
+            user.setRole("USER");
         }
         return userRepository.save(user);
     }

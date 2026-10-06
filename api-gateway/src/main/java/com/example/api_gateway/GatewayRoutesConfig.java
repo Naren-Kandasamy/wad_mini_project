@@ -15,7 +15,7 @@ public class GatewayRoutesConfig {
                 .uri("http://product-service:8082"))
             .route("user-service", r -> r.path("/api/users/**", "/api/users")
                 .uri("http://user-service:8081"))
-            .route("cart-service", r -> r.path("/api/cart/**", "/api/cart")
+            .route("cart-service", r -> r.path("/api/cart/**", "/api/cart", "/api/carts/**", "/api/carts")
                 .uri("http://cart-service:8083"))
             .route("order-service", r -> r.path("/api/orders/**", "/api/orders")
                 .uri("http://order-service:8084"))

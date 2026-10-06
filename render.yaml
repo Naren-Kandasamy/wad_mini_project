@@ -1,0 +1,89 @@
+# ==============================================================================
+# Render Blueprint Configuration (render.yaml)
+# Shopping Cart Microservices Stack
+# ==============================================================================
+
+services:
+  # ----------------------------------------------------------------------------
+  # API Gateway (Public Web Service)
+  # ----------------------------------------------------------------------------
+  - type: web
+    name: shopping-cart-api-gateway
+    env: docker
+    dockerfilePath: ./api-gateway/Dockerfile
+    dockerContext: ./api-gateway
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        value: https://shopping-cart-frontend.vercel.app/
+
+  # ----------------------------------------------------------------------------
+  # Product Service (Internal Service)
+  # ----------------------------------------------------------------------------
+  - type: pserv
+    name: product-service
+    env: docker
+    dockerfilePath: ./product-service/Dockerfile
+    dockerContext: ./product-service
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8082
+      - key: SPRING_DATA_MONGODB_URI
+        sync: false
+
+  # ----------------------------------------------------------------------------
+  # User Service (Internal Service)
+  # ----------------------------------------------------------------------------
+  - type: pserv
+    name: user-service
+    env: docker
+    dockerfilePath: ./user-service/Dockerfile
+    dockerContext: ./user-service
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8081
+      - key: SPRING_DATA_MONGODB_URI
+        sync: false
+
+  # ----------------------------------------------------------------------------
+  # Cart Service (Internal Service)
+  # ----------------------------------------------------------------------------
+  - type: pserv
+    name: cart-service
+    env: docker
+    dockerfilePath: ./cart-service/Dockerfile
+    dockerContext: ./cart-service
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8083
+      - key: SPRING_DATA_MONGODB_URI
+        sync: false
+
+  # ----------------------------------------------------------------------------
+  # Order Service (Internal Service)
+  # ----------------------------------------------------------------------------
+  - type: pserv
+    name: order-service
+    env: docker
+    dockerfilePath: ./order-service/Dockerfile
+    dockerContext: ./order-service
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 8084
+      - key: SPRING_DATA_MONGODB_URI
+        sync: false

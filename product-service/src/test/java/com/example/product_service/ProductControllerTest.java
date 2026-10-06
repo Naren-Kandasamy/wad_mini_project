@@ -39,6 +39,7 @@ class ProductControllerTest {
             """;
 
         mockMvc.perform(post("/api/products")
+                .header("X-User-Role", "ADMIN")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(payload))
                 .andExpect(status().isOk())
@@ -59,6 +60,22 @@ class ProductControllerTest {
     }
 
     @Test
+    void testCreateProductForbiddenForUserRole() throws Exception {
+        String payload = """
+            {
+                "name": "Mechanical Keyboard",
+                "price": 120.0
+            }
+            """;
+
+        mockMvc.perform(post("/api/products")
+                .header("X-User-Role", "USER")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(payload))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
     void testCreateProductInvalidValidation() throws Exception {
         String invalidPayload = """
             {
@@ -68,6 +85,7 @@ class ProductControllerTest {
             """;
 
         mockMvc.perform(post("/api/products")
+                .header("X-User-Role", "ADMIN")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(invalidPayload))
                 .andExpect(status().isBadRequest());

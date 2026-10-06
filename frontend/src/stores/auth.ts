@@ -33,38 +33,76 @@ export const useAuthStore = defineStore('auth', () => {
     isAuthModalOpen.value = !isAuthModalOpen.value
   }
 
-  // Google OAuth Login
-  async function login(username?: string, password?: string): Promise<UserProfile> {
+  // Google OAuth redirect
+  function loginWithGoogle() {
     window.location.href = '/oauth2/authorization/google'
-    // Returns a dummy promise that won't resolve before redirect
-    return new Promise(() => {})
   }
 
-  // Fallback for register, just route to login
+  // Resilient in-memory local persona logins
+  function loginAsUser(username = 'user1'): UserProfile {
+    accessToken.value = `dev-token-${username}-user`
+    user.value = {
+      sub: username,
+      preferred_username: username,
+      roles: ['USER'],
+      email: `${username}@example.com`
+    }
+    return user.value
+  }
+
+  function loginAsAdmin(username = 'admin1'): UserProfile {
+    accessToken.value = `dev-token-${username}-admin`
+    user.value = {
+      sub: username,
+      preferred_username: username,
+      roles: ['ADMIN'],
+      email: `${username}@example.com`
+    }
+    return user.value
+  }
+
+  function loginAsDeveloper(username = 'dev1'): UserProfile {
+    accessToken.value = `dev-token-${username}-dev`
+    user.value = {
+      sub: username,
+      preferred_username: username,
+      roles: ['DEVELOPER'],
+      email: `${username}@example.com`
+    }
+    return user.value
+  }
+
+  // Standard login method: routes based on username or defaults to user
+  async function login(username = 'user1', password?: string): Promise<UserProfile> {
+    const uname = (username || '').toLowerCase()
+    if (uname.includes('admin')) {
+      return loginAsAdmin(username)
+    }
+    if (uname.includes('dev')) {
+      return loginAsDeveloper(username)
+    }
+    return loginAsUser(username)
+  }
+
+  // Fallback for register, creates local user session
   async function register(payload: any): Promise<UserProfile> {
-    return login()
-  }
-
-  function loginAsUser(username = 'user1') {
-    return login()
-  }
-
-  function loginAsAdmin(username = 'admin1') {
-    return login()
-  }
-
-  function loginAsDeveloper(username = 'dev1') {
-    return login()
+    return login(payload.username || 'user1')
   }
 
   async function checkAuth() {
     try {
-      const res = await axios.get('/api/me')
+      // If already authenticated via local token, preserve state
+      if (accessToken.value && user.value) {
+        return
+      }
+
+      const res = await axios.get('/api/me', { withCredentials: true })
       if (res.data && res.data.authenticated) {
+        const roles: string[] = res.data.roles || (res.data.role ? [res.data.role] : ['USER'])
         user.value = {
           sub: res.data.email,
           preferred_username: res.data.name || res.data.email,
-          roles: ['USER'],
+          roles: roles,
           email: res.data.email
         }
         
@@ -72,8 +110,9 @@ export const useAuthStore = defineStore('auth', () => {
         try {
           await axios.post('/api/users/sync', {
             email: res.data.email,
-            name: res.data.name
-          })
+            name: res.data.name,
+            role: roles[0] || 'USER'
+          }, { withCredentials: true })
         } catch (e) {
           console.error("Failed to sync user", e)
         }
@@ -87,13 +126,13 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    try {
-      await axios.post('/api/logout')
-    } catch (e) {
-      console.error(e)
-    }
+    accessToken.value = null
     user.value = null
-    window.location.href = '/'
+    try {
+      await axios.post('/api/logout', null, { withCredentials: true })
+    } catch (e) {
+      // Ignore if session not active
+    }
   }
 
   return {
@@ -110,6 +149,7 @@ export const useAuthStore = defineStore('auth', () => {
     closeAuthModal,
     toggleAuthModal,
     login,
+    loginWithGoogle,
     register,
     loginAsUser,
     loginAsAdmin,

@@ -31,7 +31,7 @@ spring:
         - id: cart-service
           uri: http://cart-service:8083
           predicates:
-            - Path=/api/cart, /api/cart/**
+            - Path=/api/cart, /api/cart/**, /api/carts, /api/carts/**
         - id: order-service
           uri: http://order-service:8084
           predicates:
@@ -39,7 +39,11 @@ spring:
       globalcors:
         corsConfigurations:
           '[/**]':
-            allowedOrigins: "http://localhost:80"
+            allowedOriginPatterns:
+              - "http://localhost*"
+              - "http://127.0.0.1*"
+              - "https://*.vercel.app"
+              - "https://*.onrender.com"
             allowedMethods:
               - GET
               - POST

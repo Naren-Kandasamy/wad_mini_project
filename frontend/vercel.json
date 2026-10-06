@@ -1,0 +1,20 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/(.*)",
+      "destination": "https://shopping-cart-api-gateway.onrender.com/api/$1"
+    },
+    {
+      "source": "/oauth2/(.*)",
+      "destination": "https://shopping-cart-api-gateway.onrender.com/oauth2/$1"
+    },
+    {
+      "source": "/login/(.*)",
+      "destination": "https://shopping-cart-api-gateway.onrender.com/login/$1"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}

@@ -4,11 +4,15 @@
 !.env.example
 
 # Node / Frontend Build & Dependencies
+node_modules
 node_modules/
 **/node_modules/
+frontend/node_modules/
 dist/
 **/dist/
+frontend/dist/
 .vite/
+Docs/skills-main/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
