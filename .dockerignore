@@ -1,0 +1,11 @@
+**/.git
+**/.gitignore
+**/node_modules
+**/dist
+**/target
+frontend
+Docs
+*.md
+*.bat
+*.sh
+!entrypoint.sh
