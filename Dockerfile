@@ -27,16 +27,23 @@ COPY api-gateway/pom.xml api-gateway/
 COPY api-gateway/src api-gateway/src/
 RUN cd api-gateway && mvn clean package -DskipTests
 
+# 6. Unpack JARs into dedicated directories for the single-JVM classloader launcher
+RUN mkdir -p /app/user && cd /app/user && jar -xf /build/user-service/target/*.jar && \
+    mkdir -p /app/product && cd /app/product && jar -xf /build/product-service/target/*.jar && \
+    mkdir -p /app/cart && cd /app/cart && jar -xf /build/cart-service/target/*.jar && \
+    mkdir -p /app/order && cd /app/order && jar -xf /build/order-service/target/*.jar && \
+    mkdir -p /app/gateway && cd /app/gateway && jar -xf /build/api-gateway/target/*.jar
+
+# 7. Compile UnifiedRunner
+COPY UnifiedRunner.java /build/
+RUN javac /build/UnifiedRunner.java -d /app/
+
 # Runtime stage: Standard Debian-based Temurin JRE (glibc with reliable DNS SRV resolution)
 FROM eclipse-temurin:21-jre
 WORKDIR /app
 
-# Copy compiled JARs
-COPY --from=build /build/user-service/target/*.jar user-service.jar
-COPY --from=build /build/product-service/target/*.jar product-service.jar
-COPY --from=build /build/cart-service/target/*.jar cart-service.jar
-COPY --from=build /build/order-service/target/*.jar order-service.jar
-COPY --from=build /build/api-gateway/target/*.jar api-gateway.jar
+# Copy all unpacked applications and compiled UnifiedRunner
+COPY --from=build /app /app
 
 # Copy entrypoint script
 COPY entrypoint.sh .
