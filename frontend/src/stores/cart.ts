@@ -30,6 +30,35 @@ export interface CheckoutResponse {
   items: CartItem[]
 }
 
+function normalizeCartItem(item: any): CartItem {
+  const price = Number(item.price ?? item.unitPrice ?? 0)
+  const quantity = Number(item.quantity ?? 1)
+  return {
+    productId: item.productId || '',
+    productName: item.productName || 'Hardware Item',
+    unitPrice: price,
+    quantity: quantity,
+    lineTotal: Number(item.lineTotal ?? (price * quantity))
+  }
+}
+
+function normalizeCartResponse(data: any): CartResponse {
+  if (!data) {
+    return { id: '', userId: '', version: 1, items: [], subtotal: 0, updatedAt: '' }
+  }
+  const rawItems = Array.isArray(data.items) ? data.items : []
+  const items: CartItem[] = rawItems.map(normalizeCartItem)
+  const subtotal = Number(data.subtotal ?? items.reduce((sum: number, i: CartItem) => sum + i.lineTotal, 0))
+  return {
+    id: data.id || '',
+    userId: data.userEmail || data.userId || '',
+    version: data.version || 1,
+    items: items,
+    subtotal: Math.round(subtotal * 100) / 100,
+    updatedAt: data.updatedAt || new Date().toISOString()
+  }
+}
+
 export const useCartStore = defineStore('cart', () => {
   const cart = ref<CartResponse | null>(null)
   const loading = ref(false)
@@ -57,8 +86,8 @@ export const useCartStore = defineStore('cart', () => {
     loading.value = true
     error.value = null
     try {
-      const response = await apiClient.get<CartResponse>('/carts/me')
-      cart.value = response.data
+      const response = await apiClient.get<any>('/carts/me')
+      cart.value = normalizeCartResponse(response.data)
     } catch (err: any) {
       const axiosErr = err as AxiosError<ProblemDetail>
       error.value = axiosErr.response?.data?.detail || 'Failed to fetch cart'
@@ -67,15 +96,29 @@ export const useCartStore = defineStore('cart', () => {
     }
   }
 
-  async function addItem(productId: string, quantity = 1) {
+  async function addItem(productOrId: string | { id: string; name: string; price: number }, quantity = 1) {
     loading.value = true
     error.value = null
     try {
-      const response = await apiClient.post<CartResponse>('/carts/me/items', {
+      let productId = ''
+      let productName = 'Hardware Item'
+      let price = 0
+
+      if (typeof productOrId === 'object' && productOrId !== null) {
+        productId = productOrId.id
+        productName = productOrId.name
+        price = productOrId.price
+      } else {
+        productId = productOrId
+      }
+
+      const response = await apiClient.post<any>('/carts/me/items', {
         productId,
+        productName,
+        price,
         quantity
       })
-      cart.value = response.data
+      cart.value = normalizeCartResponse(response.data)
     } catch (err: any) {
       const axiosErr = err as AxiosError<ProblemDetail>
       error.value = axiosErr.response?.data?.detail || 'Failed to add item to cart'
@@ -89,10 +132,10 @@ export const useCartStore = defineStore('cart', () => {
     loading.value = true
     error.value = null
     try {
-      const response = await apiClient.put<CartResponse>(`/carts/me/items/${productId}`, {
+      const response = await apiClient.put<any>(`/carts/me/items/${productId}`, {
         quantity
       })
-      cart.value = response.data
+      cart.value = normalizeCartResponse(response.data)
     } catch (err: any) {
       const axiosErr = err as AxiosError<ProblemDetail>
       error.value = axiosErr.response?.data?.detail || 'Failed to update item quantity'
@@ -106,8 +149,8 @@ export const useCartStore = defineStore('cart', () => {
     loading.value = true
     error.value = null
     try {
-      const response = await apiClient.delete<CartResponse>(`/carts/me/items/${productId}`)
-      cart.value = response.data
+      const response = await apiClient.delete<any>(`/carts/me/items/${productId}`)
+      cart.value = normalizeCartResponse(response.data)
     } catch (err: any) {
       const axiosErr = err as AxiosError<ProblemDetail>
       error.value = axiosErr.response?.data?.detail || 'Failed to remove item'
@@ -151,7 +194,13 @@ export const useCartStore = defineStore('cart', () => {
       : 'idem-' + Math.random().toString(36).substring(2, 12)
 
     try {
-      const response = await apiClient.post<CheckoutResponse>('/orders/checkout', null, {
+      const orderItems = (cart.value?.items || []).map(i => ({
+        productId: i.productId,
+        productName: i.productName,
+        price: i.unitPrice,
+        quantity: i.quantity
+      }))
+      const response = await apiClient.post<any>('/orders/checkout', { items: orderItems }, {
         headers: {
           'Idempotency-Key': idempotencyKey
         }

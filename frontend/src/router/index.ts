@@ -5,7 +5,7 @@ import OrdersView from '../views/OrdersView.vue'
 import AdminView from '../views/AdminView.vue'
 
 const routes = [
-  { path: '/', name: 'catalog', component: CatalogView },
+  { path: '/', name: 'catalog', component: CatalogView, alias: '/catalog' },
   { path: '/cart', name: 'cart', component: CartView },
   { path: '/orders', name: 'orders', component: OrdersView },
   { path: '/admin', name: 'admin', component: AdminView }

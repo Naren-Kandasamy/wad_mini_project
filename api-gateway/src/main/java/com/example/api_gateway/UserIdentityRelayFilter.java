@@ -5,6 +5,8 @@ import org.springframework.cloud.gateway.filter.GlobalFilter;
 import org.springframework.core.Ordered;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
+import org.springframework.security.core.context.ReactiveSecurityContextHolder;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -26,25 +28,35 @@ public class UserIdentityRelayFilter implements GlobalFilter, Ordered {
             }));
         ServerWebExchange sanitizedExchange = requestBuilder.build();
 
-        // Step 2: Inject authenticated identity if present
-        return sanitizedExchange.getPrincipal()
-            .cast(Authentication.class)
+        // Step 2: Extract identity from ReactiveSecurityContextHolder or exchange principal
+        return ReactiveSecurityContextHolder.getContext()
+            .map(SecurityContext::getAuthentication)
+            .switchIfEmpty(sanitizedExchange.getPrincipal().cast(Authentication.class))
             .flatMap(auth -> {
+                String email = null;
+                String name = null;
+                String role = "USER";
+
                 if (auth instanceof OAuth2AuthenticationToken oauthToken) {
                     OAuth2User user = oauthToken.getPrincipal();
-                    String email = user.getAttribute("email");
-                    String name = user.getAttribute("name");
-                    String role = AuthController.resolveRoleForEmail(email);
+                    email = user.getAttribute("email");
+                    name = user.getAttribute("name");
+                    role = AuthController.resolveRoleForEmail(email);
+                } else if (auth != null && auth.isAuthenticated()) {
+                    name = auth.getName();
+                    email = name.contains("@") ? name : name + "@example.com";
+                    role = AuthController.resolveRoleForEmail(email);
+                }
 
+                if (email != null && !email.isBlank()) {
+                    final String finalEmail = email;
+                    final String finalName = name != null ? name : email;
+                    final String finalRole = role;
                     ServerWebExchange mutated = sanitizedExchange.mutate()
                         .request(builder -> builder.headers(h -> {
-                            if (email != null) {
-                                h.set("X-User-Email", email);
-                            }
-                            if (name != null) {
-                                h.set("X-User-Name", name);
-                            }
-                            h.set("X-User-Role", role);
+                            h.set("X-User-Email", finalEmail);
+                            h.set("X-User-Name", finalName);
+                            h.set("X-User-Role", finalRole);
                         }))
                         .build();
                     return chain.filter(mutated);

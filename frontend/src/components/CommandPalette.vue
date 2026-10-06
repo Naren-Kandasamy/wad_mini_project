@@ -273,7 +273,7 @@ async function quickAddToCart(prod: Product) {
     return
   }
   try {
-    await cartStore.addItem(prod.id, 1)
+    await cartStore.addItem(prod, 1)
     toastStore.show(`Added "${prod.name}" to basket`, 'success')
   } catch (err) {
     toastStore.show('Failed to add item', 'error')

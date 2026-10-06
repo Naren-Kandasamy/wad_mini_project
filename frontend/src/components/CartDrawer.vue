@@ -64,7 +64,7 @@
             >
               <div class="item-info">
                 <h4 class="item-name">{{ item.productName }}</h4>
-                <span class="item-unit-price">${{ item.unitPrice.toFixed(2) }} each</span>
+                <span class="item-unit-price">${{ (item.unitPrice ?? 0).toFixed(2) }} each</span>
               </div>
 
               <div class="item-controls">
@@ -93,7 +93,7 @@
 
                 <!-- Line Total & Remove -->
                 <div class="item-actions">
-                  <span class="item-total-price font-display">${{ item.lineTotal.toFixed(2) }}</span>
+                  <span class="item-total-price font-display">${{ (item.lineTotal ?? 0).toFixed(2) }}</span>
                   <button
                     type="button"
                     class="item-remove-btn"
@@ -154,7 +154,7 @@ const toastStore = useToastStore()
 
 function handleStartShopping() {
   cartStore.closeDrawer()
-  router.push('/catalog')
+  router.push('/')
 }
 
 function handleProceedToCheckout() {

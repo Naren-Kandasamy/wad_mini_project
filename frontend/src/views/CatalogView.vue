@@ -490,7 +490,7 @@ async function addToCart(product: Product) {
   }
   addingId.value = product.id
   try {
-    await cartStore.addItem(product.id, 1)
+    await cartStore.addItem(product, 1)
     recentlyAdded.value = product.id
     toastStore.show(`Added "${product.name}" to basket`, 'success')
 

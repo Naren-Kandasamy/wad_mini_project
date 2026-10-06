@@ -74,8 +74,8 @@ public class SecurityConfig {
             .authorizeExchange(exchanges -> exchanges
                 // Preflight OPTIONS requests must never be blocked by security
                 .pathMatchers(org.springframework.http.HttpMethod.OPTIONS).permitAll()
-                // Public endpoints
-                .pathMatchers("/api/me", "/api/products/**").permitAll()
+                // Microservices endpoints protected at microservice level via UserIdentityRelayFilter
+                .pathMatchers("/api/me", "/api/products/**", "/api/users/**", "/api/cart/**", "/api/carts/**", "/api/orders/**").permitAll()
                 // Any other endpoint requires authentication
                 .anyExchange().authenticated()
             )
