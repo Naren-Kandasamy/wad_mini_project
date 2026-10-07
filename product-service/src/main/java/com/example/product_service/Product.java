@@ -10,10 +10,14 @@ public class Product {
     private String description;
     private double price;
     private String imageUrl;
+    private String sku;
 
     public Product() {}
     public Product(String name, String description, double price, String imageUrl) {
         this.name = name; this.description = description; this.price = price; this.imageUrl = imageUrl;
+    }
+    public Product(String name, String description, double price, String imageUrl, String sku) {
+        this.name = name; this.description = description; this.price = price; this.imageUrl = imageUrl; this.sku = sku;
     }
     
     public String getId() { return id; }
@@ -26,4 +30,6 @@ public class Product {
     public void setPrice(double price) { this.price = price; }
     public String getImageUrl() { return imageUrl; }
     public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+    public String getSku() { return sku; }
+    public void setSku(String sku) { this.sku = sku; }
 }

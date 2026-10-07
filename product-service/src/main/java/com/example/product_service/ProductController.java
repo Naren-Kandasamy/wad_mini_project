@@ -60,7 +60,20 @@ public class ProductController {
         existing.setDescription(product.getDescription());
         existing.setPrice(product.getPrice());
         existing.setImageUrl(product.getImageUrl());
+        if (product.getSku() != null) {
+            existing.setSku(product.getSku());
+        }
         return productRepository.save(existing);
+    }
+
+    @Autowired
+    private ProductDataSeeder productDataSeeder;
+
+    @PostMapping("/seed")
+    public List<Product> seedCatalog(@RequestHeader(value = "X-User-Role", required = false) String role) {
+        checkAdminOrDevRole(role);
+        productDataSeeder.seedCatalog();
+        return productRepository.findAll();
     }
 
     @DeleteMapping("/{id}")

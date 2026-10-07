@@ -201,9 +201,9 @@ const filteredProducts = computed(() => {
   if (!query.value.trim()) return products.value.slice(0, 5)
   const q = query.value.toLowerCase()
   return products.value.filter(p =>
-    p.name.toLowerCase().includes(q) ||
-    p.description.toLowerCase().includes(q) ||
-    p.sku.toLowerCase().includes(q)
+    (p.name || '').toLowerCase().includes(q) ||
+    (p.description || '').toLowerCase().includes(q) ||
+    (p.sku || '').toLowerCase().includes(q)
   ).slice(0, 8)
 })
 

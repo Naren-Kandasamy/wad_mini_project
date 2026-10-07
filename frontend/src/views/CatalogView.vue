@@ -246,7 +246,7 @@
           <!-- Card Body -->
           <div class="card-body">
             <div class="card-category-row">
-              <span class="product-sku">{{ product.sku }}</span>
+              <span class="product-sku">{{ product.sku || ('SKU-' + (product.id ? product.id.slice(-4).toUpperCase() : 'CORE')) }}</span>
               <div class="rating-box">
                 <SvgIcon name="star" size="13" color="var(--accent-amber)" />
                 <span class="rating-val">4.9</span>
@@ -471,17 +471,17 @@ function handleCardMouseMove(e: MouseEvent, productId: string) {
   const centerX = rect.width / 2
   const centerY = rect.height / 2
 
-  const rotateX = -((y - centerY) / centerY) * 6.5
-  const rotateY = ((x - centerX) / centerX) * 6.5
+  const rotateX = -((y - centerY) / centerY) * 8.5
+  const rotateY = ((x - centerX) / centerX) * 8.5
   const sheenX = (x / rect.width) * 100
   const sheenY = (y / rect.height) * 100
 
   cardTiltStyles.value[productId] = {
-    transform: `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-4px)`,
+    transform: `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-6px)`,
     transition: 'transform 0.08s ease-out'
   }
   sheenStyles.value[productId] = {
-    background: `radial-gradient(circle at ${sheenX.toFixed(1)}% ${sheenY.toFixed(1)}%, rgba(255, 255, 255, 0.22) 0%, rgba(255, 255, 255, 0) 65%)`,
+    background: `radial-gradient(circle at ${sheenX.toFixed(1)}% ${sheenY.toFixed(1)}%, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 65%)`,
     opacity: '1'
   }
 }
@@ -521,27 +521,32 @@ const toastStore = useToastStore()
 
 const filteredProducts = computed(() => {
   return products.value.filter((p) => {
+    const name = (p.name || '').toLowerCase()
+    const desc = (p.description || '').toLowerCase()
+    const sku = (p.sku || '').toLowerCase()
+
     const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.value.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.value.toLowerCase())
+      name.includes(searchQuery.value.toLowerCase()) ||
+      desc.includes(searchQuery.value.toLowerCase()) ||
+      sku.includes(searchQuery.value.toLowerCase())
 
     if (!matchesSearch) return false
 
     if (selectedCategory.value === 'All') return true
     if (selectedCategory.value === 'Keyboards') {
-      return p.name.toLowerCase().includes('keyboard') || p.sku.toLowerCase().includes('kb')
+      return name.includes('keyboard') || sku.includes('kb')
     }
     if (selectedCategory.value === 'Mice') {
-      return p.name.toLowerCase().includes('mouse') || p.sku.toLowerCase().includes('ms')
+      return name.includes('mouse') || sku.includes('ms') || name.includes('trackball')
     }
     if (selectedCategory.value === 'Displays') {
-      return p.name.toLowerCase().includes('monitor') || p.name.toLowerCase().includes('display') || p.sku.toLowerCase().includes('mon')
+      return name.includes('monitor') || name.includes('display') || sku.includes('mon')
     }
     if (selectedCategory.value === 'Audio') {
-      return p.name.toLowerCase().includes('headphone') || p.name.toLowerCase().includes('audio') || p.sku.toLowerCase().includes('aud')
+      return name.includes('headphone') || name.includes('audio') || sku.includes('aud') || name.includes('dac') || desc.includes('dac') || desc.includes('amp')
     }
     if (selectedCategory.value === 'Peripherals') {
-      return p.name.toLowerCase().includes('mouse') || p.name.toLowerCase().includes('keyboard') || p.sku.toLowerCase().includes('per')
+      return name.includes('mouse') || name.includes('keyboard') || sku.includes('per') || desc.includes('mat') || desc.includes('cable') || name.includes('mat') || name.includes('cable') || name.includes('trackball')
     }
     return true
   })
