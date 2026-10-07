@@ -210,29 +210,33 @@
 
       <!-- Products Grid -->
       <div v-else class="products-grid">
-        <article
+        <div
           v-for="(product, index) in filteredProducts"
           :key="product.id"
-          class="product-card ceramic-card card-stagger-item"
-          :style="{ ...(cardTiltStyles[product.id] || {}), '--card-index': index }"
-          @mousemove="handleCardMouseMove($event, product.id)"
-          @mouseleave="handleCardMouseLeave(product.id)"
+          class="product-card-wrapper card-stagger-item"
+          :style="{ '--card-index': index }"
         >
-          <!-- Specular Sheen Layer on Hover -->
-          <div class="card-sheen" :style="sheenStyles[product.id] || {}"></div>
+          <article
+            class="product-card ceramic-card"
+            :style="cardTiltStyles[product.id] || {}"
+            @mousemove="handleCardMouseMove($event, product.id)"
+            @mouseleave="handleCardMouseLeave(product.id)"
+          >
+            <!-- Specular Sheen Layer on Hover -->
+            <div class="card-sheen" :style="sheenStyles[product.id] || {}"></div>
 
-          <!-- Product Media Image Card with Recessed Ceramic Dish & Vector Blueprint -->
-          <div class="card-media ceramic-dish">
-            <HardwareIllustration
-              :name="product.name"
-              :finish="selectedFinishes[product.id] || 'terracotta'"
-            />
-            <span class="stock-badge embossed-badge">
-              <span class="stock-dot"></span> In Stock
-            </span>
+            <!-- Product Media Image Card with Recessed Ceramic Dish & Vector Blueprint -->
+            <div class="card-media ceramic-dish">
+              <HardwareIllustration
+                :name="product.name"
+                :finish="selectedFinishes[product.id] || 'terracotta'"
+              />
+              <span class="stock-badge embossed-badge">
+                <span class="stock-dot"></span> In Stock
+              </span>
 
-            <!-- Quick Specs Blueprint Trigger Button -->
-            <button
+              <!-- Quick Specs Blueprint Trigger Button -->
+              <button
               type="button"
               class="quick-specs-btn"
               title="Inspect Architectural Specs"
@@ -315,6 +319,7 @@
             </button>
           </div>
         </article>
+        </div>
       </div>
     </section>
 
@@ -975,6 +980,12 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
   gap: 1.75rem;
+}
+
+.product-card-wrapper {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .product-card {
