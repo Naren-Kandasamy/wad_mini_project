@@ -443,6 +443,10 @@ body {
   animation-delay: calc(var(--card-index, 0) * 45ms);
 }
 
+.product-card.ceramic-card:hover {
+  transform: none;
+}
+
 /* ==========================================================================
    Accessibility: Reduced Motion Preference (WCAG 2.2 / Laws of UI/UX)
    ========================================================================== */

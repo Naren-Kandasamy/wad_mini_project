@@ -210,20 +210,16 @@
 
       <!-- Products Grid -->
       <div v-else class="products-grid">
-        <div
+        <article
           v-for="(product, index) in filteredProducts"
           :key="product.id"
-          class="product-card-wrapper card-stagger-item"
+          class="product-card ceramic-card card-stagger-item"
           :style="{ '--card-index': index }"
+          @mousemove="handleCardMouseMove"
+          @mouseleave="handleCardMouseLeave"
         >
-          <article
-            class="product-card ceramic-card"
-            :style="cardTiltStyles[product.id] || {}"
-            @mousemove="handleCardMouseMove($event, product.id)"
-            @mouseleave="handleCardMouseLeave(product.id)"
-          >
-            <!-- Specular Sheen Layer on Hover -->
-            <div class="card-sheen" :style="sheenStyles[product.id] || {}"></div>
+          <!-- Specular Sheen Layer on Hover -->
+          <div class="card-sheen"></div>
 
             <!-- Product Media Image Card with Recessed Ceramic Dish & Vector Blueprint -->
             <div class="card-media ceramic-dish">
@@ -319,7 +315,6 @@
             </button>
           </div>
         </article>
-        </div>
       </div>
     </section>
 
@@ -463,11 +458,11 @@ function isKeyboardProduct(name: string) {
   return (name || '').toLowerCase().includes('keyboard')
 }
 
-// 3D Perspective Card Tilt & Specular Sheen Physics
-const cardTiltStyles = ref<Record<string, Record<string, string>>>({})
-const sheenStyles = ref<Record<string, Record<string, string>>>({})
-
-function handleCardMouseMove(e: MouseEvent, productId: string) {
+// 3D Perspective Card Tilt & Specular Sheen Physics (Direct GPU acceleration)
+function handleCardMouseMove(e: MouseEvent) {
+  if (typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    return
+  }
   const card = e.currentTarget as HTMLElement
   if (!card) return
   const rect = card.getBoundingClientRect()
@@ -476,29 +471,30 @@ function handleCardMouseMove(e: MouseEvent, productId: string) {
   const centerX = rect.width / 2
   const centerY = rect.height / 2
 
-  const rotateX = -((y - centerY) / centerY) * 8.5
-  const rotateY = ((x - centerX) / centerX) * 8.5
+  const rotateX = -((y - centerY) / centerY) * 11
+  const rotateY = ((x - centerX) / centerX) * 11
   const sheenX = (x / rect.width) * 100
   const sheenY = (y / rect.height) * 100
 
-  cardTiltStyles.value[productId] = {
-    transform: `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateY(-6px)`,
-    transition: 'transform 0.08s ease-out'
-  }
-  sheenStyles.value[productId] = {
-    background: `radial-gradient(circle at ${sheenX.toFixed(1)}% ${sheenY.toFixed(1)}%, rgba(255, 255, 255, 0.28) 0%, rgba(255, 255, 255, 0) 65%)`,
-    opacity: '1'
+  card.style.transition = 'transform 0.08s ease-out'
+  card.style.transform = `perspective(1000px) rotateX(${rotateX.toFixed(2)}deg) rotateY(${rotateY.toFixed(2)}deg) translateZ(12px) scale3d(1.025, 1.025, 1.025)`
+
+  const sheen = card.querySelector('.card-sheen') as HTMLElement
+  if (sheen) {
+    sheen.style.background = `radial-gradient(circle at ${sheenX.toFixed(1)}% ${sheenY.toFixed(1)}%, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0) 65%)`
+    sheen.style.opacity = '1'
   }
 }
 
-function handleCardMouseLeave(productId: string) {
-  cardTiltStyles.value[productId] = {
-    transform: 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateY(0)',
-    transition: 'transform 0.4s cubic-bezier(0.16, 1, 0.3, 1)'
-  }
-  sheenStyles.value[productId] = {
-    opacity: '0',
-    transition: 'opacity 0.4s ease'
+function handleCardMouseLeave(e: MouseEvent) {
+  const card = e.currentTarget as HTMLElement
+  if (!card) return
+  card.style.transition = 'transform 0.45s cubic-bezier(0.16, 1, 0.3, 1)'
+  card.style.transform = 'perspective(1000px) rotateX(0deg) rotateY(0deg) translateZ(0px) scale3d(1, 1, 1)'
+
+  const sheen = card.querySelector('.card-sheen') as HTMLElement
+  if (sheen) {
+    sheen.style.opacity = '0'
   }
 }
 
@@ -980,12 +976,7 @@ onMounted(() => {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
   gap: 1.75rem;
-}
-
-.product-card-wrapper {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
+  perspective: 1200px;
 }
 
 .product-card {
@@ -995,12 +986,14 @@ onMounted(() => {
   position: relative;
   transform-style: preserve-3d;
   will-change: transform;
+  overflow: visible !important;
+  border-radius: 1.5rem;
   transition: box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease;
 }
 
 .product-card:hover {
   box-shadow:
-    0 22px 35px -10px rgba(18, 30, 24, 0.22),
+    0 24px 38px -10px rgba(18, 30, 24, 0.22),
     0 0 0 1px rgba(189, 99, 70, 0.3);
 }
 
@@ -1020,6 +1013,9 @@ onMounted(() => {
   overflow: hidden;
   border-bottom: 1px solid var(--border-subtle);
   background: var(--surface-subtle);
+  border-radius: 1.5rem 1.5rem 0 0;
+  transform: translateZ(24px);
+  transform-style: preserve-3d;
 }
 
 .quick-specs-btn {
@@ -1041,13 +1037,14 @@ onMounted(() => {
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   z-index: 4;
+  transform: translateZ(16px);
 }
 
 .quick-specs-btn:hover {
   background: var(--surface-dark);
   color: #FFFFFF;
   border-color: transparent;
-  transform: translateY(-1px);
+  transform: translateY(-1px) translateZ(20px);
 }
 
 .quick-specs-btn:hover :deep(.svg-icon) {
@@ -1064,6 +1061,7 @@ onMounted(() => {
   gap: 0.35rem;
   color: var(--text-secondary);
   z-index: 4;
+  transform: translateZ(16px);
 }
 
 .stock-dot {
@@ -1154,6 +1152,8 @@ onMounted(() => {
   flex: 1;
   display: flex;
   flex-direction: column;
+  transform: translateZ(14px);
+  transform-style: preserve-3d;
 }
 
 .card-category-row {
@@ -1206,6 +1206,9 @@ onMounted(() => {
   align-items: center;
   justify-content: space-between;
   background-color: rgba(249, 246, 240, 0.4);
+  border-radius: 0 0 1.5rem 1.5rem;
+  transform: translateZ(18px);
+  transform-style: preserve-3d;
 }
 
 .price-box {
