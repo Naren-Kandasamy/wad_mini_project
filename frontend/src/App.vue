@@ -1,12 +1,17 @@
 <template>
   <div class="app-layout">
-    <!-- Ambient Procedural Paper Grain Overlay -->
+    <!-- Ambient Procedural Paper Grain & Hardware Circuit PCB Traces Overlay -->
     <div class="paper-grain" aria-hidden="true"></div>
+    <HardwareCircuitBackground />
 
     <Navbar />
 
     <main class="main-content">
-      <router-view />
+      <router-view v-slot="{ Component, route }">
+        <transition name="page-glide" mode="out-in">
+          <component :is="Component" :key="route.path" />
+        </transition>
+      </router-view>
     </main>
 
     <!-- Global Cart Drawer, Unified Auth Modal, DevTools HUD, Command Palette, Sticky Basket & Toasts -->
@@ -28,7 +33,7 @@
             <span class="font-display footer-logo">Aura & Earth</span>
           </div>
           <p class="footer-desc">
-            An artisan modular monolith architecture blending Spring Boot 3.4 & Vue 3.
+            An artisan microservices architecture blending Spring Cloud Gateway & Vue 3.
           </p>
         </div>
 
@@ -43,7 +48,7 @@
             <h5 class="col-title">Architecture</h5>
             <span>Idempotency-Key (RFC 7231)</span>
             <span>In-Memory JWT Token Store</span>
-            <span>OWASP Defended Monolith</span>
+            <span>OWASP Defended Microservices</span>
           </div>
         </div>
       </div>
@@ -51,7 +56,7 @@
       <div class="footer-bottom">
         <div class="container-wide text-center">
           <p class="copyright">
-            © 2026 Aura & Earth Monolith. All rights reserved. Built with pride for WAD Mini Project.
+            © 2026 Aura & Earth Microservices. All rights reserved. Built with pride for WAD Mini Project.
           </p>
         </div>
       </div>
@@ -70,6 +75,7 @@ import CommandPalette from './components/CommandPalette.vue'
 import StickyBasketBar from './components/StickyBasketBar.vue'
 import ToastContainer from './components/ToastContainer.vue'
 import SvgIcon from './components/SvgIcon.vue'
+import HardwareCircuitBackground from './components/HardwareCircuitBackground.vue'
 
 const authStore = useAuthStore()
 onMounted(() => {
@@ -82,10 +88,13 @@ onMounted(() => {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .main-content {
   flex: 1;
+  position: relative;
+  z-index: 1;
 }
 
 .global-footer {

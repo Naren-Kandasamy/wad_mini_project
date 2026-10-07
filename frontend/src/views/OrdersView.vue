@@ -20,14 +20,14 @@
       <div v-for="n in 3" :key="n" class="skeleton-shimmer h-32 w-full mb-4"></div>
     </div>
 
-    <!-- Offline Service Error State -->
-    <ServiceOfflineCard
-      v-else-if="connectionError"
-      title="Orders Service Offline"
-      description="We couldn't connect to the backend to fetch your order history. The monolithic service may be restarting or unreachable."
-      endpoint="/api/orders"
-      :onRetry="loadOrders"
-    />
+    <!-- Offline Service Error State (Role Adaptive) -->
+    <div v-else-if="connectionError" class="orders-error-wrap">
+      <RoleAdaptiveErrorBanner
+        :error="ordersError"
+        @retry="loadOrders"
+        @action="handleErrorAction"
+      />
+    </div>
 
     <!-- Unauthenticated State -->
     <div v-else-if="!authStore.isAuthenticated" class="empty-orders ceramic-card">
@@ -62,9 +62,10 @@
     <!-- Orders List -->
     <div v-else class="orders-list">
       <div
-        v-for="order in orders"
+        v-for="(order, index) in orders"
         :key="order.id"
-        class="order-card ceramic-card"
+        class="order-card ceramic-card card-stagger-item"
+        :style="{ '--card-index': index }"
       >
         <!-- Order Card Header -->
         <div class="order-card-header">
@@ -273,6 +274,7 @@ import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 import SvgIcon from '../components/SvgIcon.vue'
 import ServiceOfflineCard from '../components/ServiceOfflineCard.vue'
+import RoleAdaptiveErrorBanner from '../components/RoleAdaptiveErrorBanner.vue'
 
 interface OrderItem {
   productId: string
@@ -294,6 +296,7 @@ interface Order {
 const orders = ref<Order[]>([])
 const loading = ref(false)
 const connectionError = ref(false)
+const ordersError = ref<unknown | null>(null)
 const authStore = useAuthStore()
 const toastStore = useToastStore()
 
@@ -353,16 +356,28 @@ async function loadOrders() {
   if (!authStore.isAuthenticated) return
   loading.value = true
   connectionError.value = false
+  ordersError.value = null
   try {
     const res = await apiClient.get<Order[]>('/orders')
     orders.value = res.data
   } catch (err) {
     connectionError.value = true
+    ordersError.value = err
     if (authStore.isDeveloper) {
       toastStore.show('Orders API unreachable (Port 8080)', 'error')
     }
   } finally {
     loading.value = false
+  }
+}
+
+function handleErrorAction(type?: string) {
+  if (type === 'OPEN_AUTH') {
+    authStore.openAuthModal()
+  } else if (type === 'REFRESH_PAGE') {
+    loadOrders()
+  } else if (type === 'CONTACT_SUPPORT') {
+    toastStore.show('Support dispatch initiated: help@aurahardware.internal', 'info')
   }
 }
 

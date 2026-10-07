@@ -92,7 +92,7 @@
                   v-model="loginUsername"
                   type="text"
                   required
-                  placeholder="e.g. user1 or dev1"
+                  placeholder="e.g. user1 or user1@example.com"
                   class="auth-input"
                 />
               </div>
@@ -191,33 +191,36 @@
 
           <!-- Quick-Select Persona Bar (Local Dev & Testing Helper) -->
           <div class="quick-persona-section">
-            <span class="quick-title">Quick-Select Persona for Local Testing:</span>
+            <span class="quick-title">Quick-Select Persona (Username or Email):</span>
             <div class="persona-chips">
               <button
                 type="button"
                 class="persona-chip"
-                @click="quickSelect('user1', 'password123')"
+                @click="quickSelect('user1@example.com', 'password123')"
+                title="Sign in with email: user1@example.com"
               >
                 <span class="persona-role">Customer</span>
-                <span class="persona-user">user1</span>
+                <span class="persona-user">user1@example.com</span>
               </button>
 
               <button
                 type="button"
                 class="persona-chip chip-admin"
-                @click="quickSelect('admin1', 'admin123')"
+                @click="quickSelect('admin1@example.com', 'admin123')"
+                title="Sign in with email: admin1@example.com"
               >
                 <span class="persona-role">Admin</span>
-                <span class="persona-user">admin1</span>
+                <span class="persona-user">admin1@example.com</span>
               </button>
 
               <button
                 type="button"
                 class="persona-chip chip-dev"
-                @click="quickSelect('dev1', 'dev123')"
+                @click="quickSelect('dev1@example.com', 'dev123')"
+                title="Sign in with email: dev1@example.com"
               >
                 <span class="persona-role">Developer</span>
-                <span class="persona-user">dev1</span>
+                <span class="persona-user">dev1@example.com</span>
               </button>
             </div>
           </div>

@@ -83,7 +83,11 @@
         >
           <SvgIcon name="bag" size="18" color="#FFFFFF" />
           <span class="cart-label">Basket</span>
-          <span v-if="cartStore.itemCount > 0" class="cart-badge">
+          <span
+            v-if="cartStore.itemCount > 0"
+            class="cart-badge"
+            :class="{ 'animate-badge-pop': badgePopping }"
+          >
             {{ cartStore.itemCount }}
           </span>
         </button>
@@ -93,12 +97,26 @@
 </template>
 
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useCartStore } from '../stores/cart'
 import SvgIcon from './SvgIcon.vue'
 
 const authStore = useAuthStore()
 const cartStore = useCartStore()
+
+const badgePopping = ref(false)
+watch(
+  () => cartStore.itemCount,
+  (newVal, oldVal) => {
+    if (newVal > (oldVal || 0)) {
+      badgePopping.value = true
+      setTimeout(() => {
+        badgePopping.value = false
+      }, 350)
+    }
+  }
+)
 
 function openCommandPalette() {
   window.dispatchEvent(new CustomEvent('open-command-palette'))

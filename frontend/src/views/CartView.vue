@@ -5,11 +5,14 @@
       <p class="cart-subtitle">Guided 3-step checkout with RFC 7231 cryptographic idempotency defense.</p>
     </div>
 
-    <!-- Error Alert Banner -->
-    <div v-if="cartStore.error" class="alert-banner alert-error">
-      <SvgIcon name="close" size="18" color="var(--accent-terracotta)" />
-      <span>{{ cartStore.error }}</span>
-    </div>
+    <!-- Role-Adaptive Tactile Error Banner -->
+    <RoleAdaptiveErrorBanner
+      v-if="cartStore.error"
+      :error="cartStore.error"
+      :dismissible="true"
+      @dismiss="cartStore.error = null"
+      @action="handleErrorAction"
+    />
 
     <!-- 3-Step Tactile Checkout Stepper Header -->
     <div v-if="cartStore.items.length > 0 || checkoutSuccess" class="stepper-nav debossed-well">
@@ -380,14 +383,28 @@
 
 <script setup lang="ts">
 import { ref, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
 import { useCartStore, CheckoutResponse, CartItem } from '../stores/cart'
 import { useAuthStore } from '../stores/auth'
 import { useToastStore } from '../stores/toast'
 import SvgIcon from '../components/SvgIcon.vue'
+import RoleAdaptiveErrorBanner from '../components/RoleAdaptiveErrorBanner.vue'
 
+const router = useRouter()
 const cartStore = useCartStore()
 const authStore = useAuthStore()
 const toastStore = useToastStore()
+
+function handleErrorAction(type?: string) {
+  if (type === 'login') {
+    authStore.openAuthModal()
+  } else if (type === 'refresh' || type === 'retry') {
+    cartStore.error = null
+    cartStore.syncCartWithServer()
+  } else if (type === 'catalog') {
+    router.push('/')
+  }
+}
 
 const currentStep = ref<1 | 2 | 3>(1)
 const checkoutSuccess = ref<CheckoutResponse | null>(null)

@@ -45,12 +45,12 @@
               <div class="status-chip">
                 <span class="status-label">Auth Provider</span>
                 <span class="status-val val-info">
-                  {{ authStore.authMode === 'keycloak' ? 'Keycloak 24 (Port 8180)' : 'Local Resilient Fallback' }}
+                  {{ authStore.authMode === 'google' ? 'Google Cloud OAuth 2.0' : authStore.authMode === 'keycloak' ? 'Keycloak 24 (Port 8180)' : 'Local Resilient Fallback' }}
                 </span>
               </div>
               <div class="status-chip">
-                <span class="status-label">Mongo Replica Set</span>
-                <span class="status-val val-info">Port 27018 (rs0)</span>
+                <span class="status-label">MongoDB Microservices</span>
+                <span class="status-val val-info">Port 27019</span>
               </div>
             </div>
           </div>

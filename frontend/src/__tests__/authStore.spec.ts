@@ -55,4 +55,53 @@ describe('Auth Store Security Specifications', () => {
     expect(auth.user).toBeNull()
     expect(auth.currentUserId).toBe('')
   })
+
+  it('authenticates successfully using email address instead of username', async () => {
+    const auth = useAuthStore()
+    const profile = await auth.login('user1@example.com', 'password123')
+
+    expect(auth.isAuthenticated).toBe(true)
+    expect(profile.sub).toBe('user1')
+    expect(profile.email).toBe('user1@example.com')
+    expect(profile.roles).toContain('USER')
+  })
+
+  it('authenticates case-insensitively with uppercase email address', async () => {
+    const auth = useAuthStore()
+    const profile = await auth.login('DEV1@EXAMPLE.COM', 'dev123')
+
+    expect(auth.isAuthenticated).toBe(true)
+    expect(profile.sub).toBe('dev1')
+    expect(profile.roles).toContain('DEVELOPER')
+  })
+
+  it('allows registering a new user with email and logging in by email', async () => {
+    const auth = useAuthStore()
+    await auth.register({
+      username: 'clara',
+      email: 'clara@electronics.org',
+      password: 'clarapassword'
+    })
+
+    expect(auth.isAuthenticated).toBe(true)
+    expect(auth.currentUserId).toBe('clara')
+
+    // Logout and log back in using only the email
+    auth.logout()
+    expect(auth.isAuthenticated).toBe(false)
+
+    const reLoggedIn = await auth.login('clara@electronics.org', 'clarapassword')
+    expect(reLoggedIn.sub).toBe('clara')
+    expect(reLoggedIn.email).toBe('clara@electronics.org')
+    expect(auth.isAuthenticated).toBe(true)
+  })
+
+  it('rejects registering with an already existing email', async () => {
+    const auth = useAuthStore()
+    await expect(auth.register({
+      username: 'another_user',
+      email: 'user1@example.com',
+      password: 'anypassword'
+    })).rejects.toThrow('already exists')
+  })
 })

@@ -181,6 +181,14 @@
       <line x1="12" y1="8" x2="12.01" y2="8" />
     </g>
 
+    <!-- Refresh / Reload -->
+    <g v-else-if="name === 'refresh' || name === 'rotate-cw'">
+      <path d="M21 2v6h-6" />
+      <path d="M3 12a9 9 0 0 1 15-6.7L21 8" />
+      <path d="M3 22v-6h6" />
+      <path d="M21 12a9 9 0 0 1-15 6.7L3 16" />
+    </g>
+
     <!-- Fallback Circle -->
     <circle v-else cx="12" cy="12" r="10" />
   </svg>
