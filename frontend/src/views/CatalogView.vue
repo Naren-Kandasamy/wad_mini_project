@@ -231,6 +231,17 @@
                 <span class="stock-dot"></span> In Stock
               </span>
 
+              <!-- Admin/Developer Quick Catalog Removal Trigger -->
+              <button
+                v-if="authStore.isAdmin || authStore.isDeveloper"
+                type="button"
+                class="admin-delete-btn"
+                :title="'Remove ' + product.name + ' from catalog'"
+                @click.stop="handleAdminDeleteProduct(product)"
+              >
+                <SvgIcon name="trash" size="13" color="var(--accent-terracotta)" />
+              </button>
+
               <!-- Quick Specs Blueprint Trigger Button -->
               <button
               type="button"
@@ -510,6 +521,25 @@ const activeSpecsProduct = ref<Product | null>(null)
 function openSpecsDrawer(product: Product) {
   activeSpecsProduct.value = product
   isSpecsDrawerOpen.value = true
+}
+
+async function handleAdminDeleteProduct(product: Product) {
+  const confirmed = window.confirm(
+    `[ADMIN ACTION] Are you sure you want to permanently remove "${product.name}" from the catalog?`
+  )
+  if (!confirmed) return
+
+  try {
+    await apiClient.delete(`/products/${product.id}`)
+    products.value = products.value.filter(p => p.id !== product.id)
+    if (typeof window !== 'undefined' && window.localStorage) {
+      window.localStorage.setItem('aura_catalog_cache', JSON.stringify(products.value))
+    }
+    toastStore.show(`Removed "${product.name}" from catalog`, 'success')
+  } catch (err: any) {
+    const errMsg = err.response?.data?.message || err.response?.data?.detail || 'Failed to remove product'
+    toastStore.show(errMsg, 'error')
+  }
 }
 
 const searchQuery = ref('')
@@ -1062,6 +1092,36 @@ onMounted(() => {
   color: var(--text-secondary);
   z-index: 4;
   transform: translateZ(16px);
+}
+
+.admin-delete-btn {
+  position: absolute;
+  top: 0.85rem;
+  right: 0.85rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(200, 109, 81, 0.3);
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 4;
+  transform: translateZ(16px);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+.admin-delete-btn:hover {
+  background: var(--accent-terracotta);
+  border-color: var(--accent-terracotta);
+  transform: translateZ(20px) scale(1.08);
+}
+
+.admin-delete-btn:hover :deep(.svg-icon) {
+  stroke: #FFFFFF;
 }
 
 .stock-dot {

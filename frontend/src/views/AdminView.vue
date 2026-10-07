@@ -148,6 +148,70 @@
           </div>
         </form>
       </section>
+
+      <!-- Catalog Inventory Management & Removal Section -->
+      <section class="ceramic-card inventory-card full-width-section">
+        <div class="card-head">
+          <div>
+            <h3 class="card-head-title font-display">Active Catalog Inventory</h3>
+            <p class="section-subtitle">Manage or remove mistakenly added products directly from the database.</p>
+          </div>
+          <button
+            type="button"
+            class="btn-secondary btn-sm refresh-btn"
+            :disabled="productsLoading"
+            @click="loadProducts"
+          >
+            <SvgIcon name="sparkle" size="14" :class="{ rotating: productsLoading }" />
+            <span>Refresh</span>
+          </button>
+        </div>
+
+        <div v-if="productsLoading" class="inventory-loading">
+          <div class="skeleton-shimmer h-12 w-full mb-2" v-for="i in 3" :key="i"></div>
+        </div>
+
+        <div v-else-if="products.length === 0" class="empty-inventory">
+          <p class="text-muted">No products currently registered in the database.</p>
+        </div>
+
+        <div v-else class="inventory-table-container">
+          <table class="inventory-table">
+            <thead>
+              <tr>
+                <th>Item</th>
+                <th>SKU</th>
+                <th>Price</th>
+                <th class="text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="item in products" :key="item.id" class="inventory-row">
+                <td class="font-medium product-name-cell">
+                  <span class="product-title-text">{{ item.name }}</span>
+                  <span class="product-desc-snippet">{{ item.description }}</span>
+                </td>
+                <td>
+                  <span class="sku-tag">{{ item.sku || 'N/A' }}</span>
+                </td>
+                <td class="price-cell font-mono">${{ Number(item.price).toFixed(2) }}</td>
+                <td class="text-right">
+                  <button
+                    type="button"
+                    class="btn-danger-outline btn-sm"
+                    :disabled="deletingId === item.id"
+                    @click="deleteProduct(item)"
+                    title="Remove product from catalog"
+                  >
+                    <SvgIcon name="trash" size="14" color="var(--accent-terracotta)" />
+                    <span>{{ deletingId === item.id ? 'Removing...' : 'Remove' }}</span>
+                  </button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
     </div>
   </div>
 </template>
@@ -177,6 +241,51 @@ const submitting = ref(false)
 const formSuccess = ref<string | null>(null)
 const formError = ref<string | null>(null)
 
+interface ProductItem {
+  id: string
+  name: string
+  description: string
+  price: number
+  sku: string
+}
+
+const products = ref<ProductItem[]>([])
+const productsLoading = ref(false)
+const deletingId = ref<string | null>(null)
+
+async function loadProducts() {
+  productsLoading.value = true
+  try {
+    const res = await apiClient.get<ProductItem[]>('/products')
+    if (res.data && Array.isArray(res.data)) {
+      products.value = res.data
+    }
+  } catch (err: any) {
+    console.error('Failed to load products for admin management:', err)
+  } finally {
+    productsLoading.value = false
+  }
+}
+
+async function deleteProduct(item: ProductItem) {
+  const confirmed = window.confirm(
+    `Are you sure you want to permanently remove "${item.name}" (SKU: ${item.sku}) from the catalog?`
+  )
+  if (!confirmed) return
+
+  deletingId.value = item.id
+  try {
+    await apiClient.delete(`/products/${item.id}`)
+    products.value = products.value.filter(p => p.id !== item.id)
+    toastStore.show(`Removed "${item.name}" from catalog`, 'success')
+  } catch (err: any) {
+    const errMsg = err.response?.data?.message || err.response?.data?.detail || 'Failed to remove product'
+    toastStore.show(errMsg, 'error')
+  } finally {
+    deletingId.value = null
+  }
+}
+
 async function loadStats() {
   statsLoading.value = true
   try {
@@ -194,9 +303,14 @@ async function createProduct() {
   formSuccess.value = null
   formError.value = null
   try {
-    await apiClient.post('/products', form.value)
+    const res = await apiClient.post<ProductItem>('/products', form.value)
     formSuccess.value = `Published "${form.value.name}" with SKU "${form.value.sku}" successfully!`
     toastStore.show(`Published product "${form.value.name}"`, 'success')
+    if (res.data && res.data.id) {
+      products.value.unshift(res.data)
+    } else {
+      loadProducts()
+    }
     form.value = { name: '', description: '', price: 0, sku: '', active: true }
   } catch (err: any) {
     formError.value = err.response?.data?.detail || 'Failed to create product'
@@ -211,8 +325,10 @@ watch(
   (isAdmin) => {
     if (isAdmin) {
       loadStats()
+      loadProducts()
     } else {
       stats.value = null
+      products.value = []
     }
   }
 )
@@ -220,6 +336,7 @@ watch(
 onMounted(() => {
   if (authStore.isAdmin) {
     loadStats()
+    loadProducts()
   }
 })
 </script>
@@ -447,6 +564,131 @@ onMounted(() => {
 
 .form-actions {
   margin-top: 0.5rem;
+}
+
+/* Inventory Management Table */
+.full-width-section {
+  grid-column: 1 / -1;
+}
+
+.section-subtitle {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.refresh-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  cursor: pointer;
+}
+
+.inventory-table-container {
+  overflow-x: auto;
+  margin-top: 0.5rem;
+}
+
+.inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.inventory-table th {
+  padding: 0.75rem 1rem;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.inventory-table td {
+  padding: 0.85rem 1rem;
+  border-bottom: 1px solid var(--border-subtle);
+  vertical-align: middle;
+}
+
+.inventory-row:hover {
+  background: rgba(25, 49, 38, 0.02);
+}
+
+.product-name-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  max-width: 320px;
+}
+
+.product-title-text {
+  font-weight: 600;
+  color: var(--surface-dark);
+}
+
+.product-desc-snippet {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sku-tag {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.75rem;
+  background: var(--canvas-alt);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  color: var(--text-secondary);
+}
+
+.price-cell {
+  font-weight: 600;
+  color: var(--surface-dark);
+}
+
+.text-right {
+  text-align: right;
+}
+
+.btn-danger-outline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--accent-terracotta);
+  background: rgba(200, 109, 81, 0.08);
+  border: 1px solid rgba(200, 109, 81, 0.25);
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-danger-outline:hover:not(:disabled) {
+  background: var(--accent-terracotta);
+  color: #FFFFFF;
+  border-color: var(--accent-terracotta);
+}
+
+.btn-danger-outline:hover:not(:disabled) :deep(.svg-icon) {
+  stroke: #FFFFFF;
+}
+
+.btn-danger-outline:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.empty-inventory {
+  padding: 2.5rem 1rem;
+  text-align: center;
 }
 
 @media (max-width: 640px) {
